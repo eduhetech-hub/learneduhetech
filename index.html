@@ -1,0 +1,2531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>EduHeTech — AI-Powered Educational Super App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/@phosphor-icons/web@2.0.3"></script>
+<script>
+tailwind.config = {
+    darkMode: 'class',
+    theme: {
+        extend: {
+            fontFamily: { sans: ['Inter','system-ui','sans-serif'], mono: ['JetBrains Mono','monospace'] },
+            colors: {
+                primary: { 50:'#E3F2FD',100:'#BBDEFB',200:'#90CAF9',300:'#64B5F6',400:'#42A5F5',500:'#2196F3',600:'#1E88E5',700:'#1976D2',800:'#1565C0',900:'#0D47A1' },
+                success: { 50:'#E8F5E9',100:'#C8E6C9',200:'#A5D6A7',300:'#81C784',400:'#66BB6A',500:'#4CAF50',600:'#43A047',700:'#388E3C',800:'#2E7D32',900:'#1B5E20' },
+                teal: { 500:'#009688',700:'#00796B' },
+                warning: { 500:'#FF9800',700:'#F57C00' },
+                error: { 500:'#F44336',700:'#D32F2F' },
+                neutral: { 50:'#FAFAFA',100:'#F5F5F5',200:'#EEEEEE',300:'#E0E0E0',400:'#BDBDBD',500:'#9E9E9E',600:'#757575',700:'#616161',800:'#424242',900:'#212121' },
+                dark: { bg:'#121212',surface:'#1E1E1E',card:'#252525',border:'#2C2C2C' }
+            }
+        }
+    }
+}
+</script>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,sans-serif}
+#app{height:100vh;overflow:hidden;display:flex;flex-direction:column}
+.page{display:none;height:100%;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none}
+.page::-webkit-scrollbar{display:none}
+.page.active{display:block}
+.slide-in{animation:slideIn 0.3s cubic-bezier(0.0,0.0,0.2,1)}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.fade-in{animation:fadeIn 0.25s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.pulse{animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}
+.float-up{animation:floatUp 0.6s ease-out forwards}
+@keyframes floatUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.shimmer{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.card-press:active{transform:scale(0.97);transition:transform 0.1s}
+.ripple{position:relative;overflow:hidden}
+.ripple::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,0.3);border-radius:inherit;transform:scale(0);opacity:0;transition:transform 0.4s,opacity 0.4s}
+.ripple:active::after{transform:scale(2);opacity:1;transition:0s}
+.glass{background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.dark .glass{background:rgba(30,30,30,0.85)}
+.gradient-blue{background:linear-gradient(135deg,#2196F3,#1976D2)}
+.gradient-green{background:linear-gradient(135deg,#4CAF50,#388E3C)}
+.gradient-purple{background:linear-gradient(135deg,#7C4DFF,#651FFF)}
+.gradient-teal{background:linear-gradient(135deg,#009688,#00796B)}
+.gradient-orange{background:linear-gradient(135deg,#FF9800,#F57C00)}
+.hide-scrollbar::-webkit-scrollbar{display:none}
+.hide-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+.line-clamp-1{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.toast-enter{animation:toastEnter 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes toastEnter{from{transform:translateY(100px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-enter{animation:modalEnter 0.3s cubic-bezier(0.0,0.0,0.2,1)}
+@keyframes modalEnter{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+.drawer-enter{animation:drawerEnter 0.3s cubic-bezier(0.0,0.0,0.2,1)}
+@keyframes drawerEnter{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+.confetti{position:fixed;pointer-events:none;z-index:9999}
+.confetti-piece{position:absolute;width:8px;height:8px;animation:confettiFall 3s ease-out forwards}
+@keyframes confettiFall{0%{transform:translateY(-10vh) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+</style>
+</head>
+<body class="bg-neutral-50 dark:bg-dark-bg text-neutral-900 dark:text-white transition-colors duration-300">
+
+<!-- ==================== APP CONTAINER ==================== -->
+<div id="app">
+
+<!-- ==================== SPLASH SCREEN ==================== -->
+<div id="splash" class="fixed inset-0 z-[100] bg-white dark:bg-dark-bg flex flex-col items-center justify-center transition-opacity duration-500">
+    <div class="w-28 h-28 rounded-3xl gradient-blue flex items-center justify-center shadow-lg shadow-primary-500/30 mb-6 float-up">
+        <i class="ph-fill ph-graduation-cap text-white text-5xl"></i>
+    </div>
+    <h1 class="text-3xl font-bold text-primary-600 dark:text-primary-400 float-up" style="animation-delay:0.1s">EduHeTech</h1>
+    <p class="text-neutral-500 dark:text-neutral-400 mt-2 text-lg float-up" style="animation-delay:0.2s">Learn. Earn. Excel.</p>
+    <div class="mt-8 w-48 h-1 bg-neutral-200 dark:bg-dark-border rounded-full overflow-hidden float-up" style="animation-delay:0.3s">
+        <div id="splash-bar" class="h-full gradient-blue rounded-full transition-all duration-[2000ms] ease-out" style="width:0%"></div>
+    </div>
+    <p class="absolute bottom-8 text-xs text-neutral-400 dark:text-neutral-600">Powered by AI</p>
+</div>
+
+<!-- ==================== ONBOARDING ==================== -->
+<div id="onboarding" class="fixed inset-0 z-[90] bg-white dark:bg-dark-bg hidden">
+    <div id="onboarding-slides" class="h-full relative">
+        <!-- Slide 1 -->
+        <div class="onboarding-slide absolute inset-0 flex flex-col items-center justify-center p-8" data-index="0">
+            <div class="w-64 h-64 rounded-full bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mb-8">
+                <i class="ph-duotone ph-books text-primary-500 text-8xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-center mb-3">Learn Anytime, Anywhere</h2>
+            <p class="text-neutral-500 dark:text-neutral-400 text-center max-w-xs">Access courses in Health, Tech, Business & more from world-class instructors</p>
+        </div>
+        <!-- Slide 2 -->
+        <div class="onboarding-slide absolute inset-0 flex flex-col items-center justify-center p-8 hidden" data-index="1">
+            <div class="w-64 h-64 rounded-full bg-success-50 dark:bg-success-900/20 flex items-center justify-center mb-8">
+                <i class="ph-duotone ph-coins text-success-500 text-8xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-center mb-3">Learn & Earn Rewards</h2>
+            <p class="text-neutral-500 dark:text-neutral-400 text-center max-w-xs">Complete tasks, watch lessons, and earn EduPoints you can withdraw</p>
+        </div>
+        <!-- Slide 3 -->
+        <div class="onboarding-slide absolute inset-0 flex flex-col items-center justify-center p-8 hidden" data-index="2">
+            <div class="w-64 h-64 rounded-full bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center mb-8">
+                <i class="ph-duotone ph-robot text-purple-500 text-8xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-center mb-3">Your AI Tutor Awaits</h2>
+            <p class="text-neutral-500 dark:text-neutral-400 text-center max-w-xs">Get instant help, summaries, and quizzes from your personal AI assistant</p>
+            <button onclick="app.goToAuth()" class="mt-8 w-full max-w-xs h-14 rounded-xl gradient-blue text-white font-semibold text-lg shadow-lg shadow-primary-500/30 ripple">Get Started</button>
+        </div>
+    </div>
+    <div class="absolute bottom-12 left-0 right-0 flex justify-center gap-2">
+        <span class="onboarding-dot w-2.5 h-2.5 rounded-full bg-primary-500 transition-all" data-index="0"></span>
+        <span class="onboarding-dot w-2.5 h-2.5 rounded-full bg-neutral-300 dark:bg-neutral-700 transition-all" data-index="1"></span>
+        <span class="onboarding-dot w-2.5 h-2.5 rounded-full bg-neutral-300 dark:bg-neutral-700 transition-all" data-index="2"></span>
+    </div>
+    <button onclick="app.nextOnboarding()" class="absolute bottom-12 right-8 w-12 h-12 rounded-full gradient-blue text-white flex items-center justify-center shadow-lg">
+        <i class="ph-bold ph-arrow-right text-xl"></i>
+    </button>
+</div>
+
+<!-- ==================== AUTHENTICATION ==================== -->
+<div id="auth" class="fixed inset-0 z-[80] bg-white dark:bg-dark-bg hidden overflow-y-auto">
+    <!-- Login -->
+    <div id="login-view" class="min-h-full flex flex-col p-6">
+        <button onclick="app.goBack()" class="w-10 h-10 rounded-full bg-neutral-100 dark:bg-dark-card flex items-center justify-center">
+            <i class="ph-bold ph-arrow-left text-neutral-600 dark:text-neutral-300"></i>
+        </button>
+        <div class="mt-8">
+            <h1 class="text-3xl font-bold">Welcome Back</h1>
+            <p class="text-neutral-500 dark:text-neutral-400 mt-2">Sign in to continue your learning journey</p>
+        </div>
+        <form onsubmit="app.login(event)" class="mt-8 space-y-4">
+            <div>
+                <label class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Email Address</label>
+                <input type="email" id="login-email" value="student@eduhetech.com" class="mt-1.5 w-full h-14 px-4 rounded-xl bg-neutral-100 dark:bg-dark-card border-2 border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-dark-surface outline-none transition-all text-base" placeholder="you@example.com" required>
+            </div>
+            <div>
+                <label class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Password</label>
+                <div class="relative mt-1.5">
+                    <input type="password" id="login-password" value="password123" class="w-full h-14 px-4 pr-12 rounded-xl bg-neutral-100 dark:bg-dark-card border-2 border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-dark-surface outline-none transition-all text-base" placeholder="••••••••" required>
+                    <button type="button" onclick="app.togglePassword('login-password')" class="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400">
+                        <i class="ph ph-eye text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex justify-end">
+                <button type="button" onclick="app.showForgot()" class="text-primary-600 dark:text-primary-400 text-sm font-medium">Forgot Password?</button>
+            </div>
+            <button type="submit" class="w-full h-14 rounded-xl gradient-blue text-white font-semibold text-lg shadow-lg shadow-primary-500/30 ripple">Sign In</button>
+        </form>
+        <div class="mt-6 flex items-center gap-4">
+            <div class="flex-1 h-px bg-neutral-200 dark:bg-dark-border"></div>
+            <span class="text-sm text-neutral-400">Or continue with</span>
+            <div class="flex-1 h-px bg-neutral-200 dark:bg-dark-border"></div>
+        </div>
+        <div class="mt-6 space-y-3">
+            <button onclick="app.socialLogin('google')" class="w-full h-12 rounded-xl border-2 border-neutral-200 dark:border-dark-border flex items-center justify-center gap-3 font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-dark-card transition-colors">
+                <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                Continue with Google
+            </button>
+            <button onclick="app.socialLogin('phone')" class="w-full h-12 rounded-xl border-2 border-neutral-200 dark:border-dark-border flex items-center justify-center gap-3 font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-dark-card transition-colors">
+                <i class="ph-fill ph-phone text-xl text-teal-500"></i>
+                Continue with Phone
+            </button>
+        </div>
+        <p class="mt-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
+            Don't have an account? <button onclick="app.showRegister()" class="text-primary-600 dark:text-primary-400 font-semibold">Sign Up</button>
+        </p>
+    </div>
+    <!-- Register -->
+    <div id="register-view" class="min-h-full flex flex-col p-6 hidden">
+        <button onclick="app.goBack()" class="w-10 h-10 rounded-full bg-neutral-100 dark:bg-dark-card flex items-center justify-center">
+            <i class="ph-bold ph-arrow-left text-neutral-600 dark:text-neutral-300"></i>
+        </button>
+        <div class="mt-8">
+            <h1 class="text-3xl font-bold">Create Account</h1>
+            <p class="text-neutral-500 dark:text-neutral-400 mt-2">Join millions of learners worldwide</p>
+        </div>
+        <form onsubmit="app.register(event)" class="mt-8 space-y-4">
+            <div>
+                <label class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Full Name</label>
+                <input type="text" id="reg-name" class="mt-1.5 w-full h-14 px-4 rounded-xl bg-neutral-100 dark:bg-dark-card border-2 border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-dark-surface outline-none transition-all text-base" placeholder="John Doe" required>
+            </div>
+            <div>
+                <label class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Email Address</label>
+                <input type="email" id="reg-email" class="mt-1.5 w-full h-14 px-4 rounded-xl bg-neutral-100 dark:bg-dark-card border-2 border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-dark-surface outline-none transition-all text-base" placeholder="you@example.com" required>
+            </div>
+            <div>
+                <label class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Phone Number</label>
+                <input type="tel" id="reg-phone" class="mt-1.5 w-full h-14 px-4 rounded-xl bg-neutral-100 dark:bg-dark-card border-2 border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-dark-surface outline-none transition-all text-base" placeholder="+234 800 000 0000">
+            </div>
+            <div>
+                <label class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Password</label>
+                <input type="password" id="reg-password" class="mt-1.5 w-full h-14 px-4 rounded-xl bg-neutral-100 dark:bg-dark-card border-2 border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-dark-surface outline-none transition-all text-base" placeholder="••••••••" required>
+            </div>
+            <div>
+                <label class="text-sm font-medium text-neutral-700 dark:text-neutral-300">I am a</label>
+                <div class="mt-1.5 flex gap-3">
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="role" value="student" checked class="peer sr-only">
+                        <div class="h-14 rounded-xl border-2 border-neutral-200 dark:border-dark-border flex items-center justify-center gap-2 peer-checked:border-primary-500 peer-checked:bg-primary-50 dark:peer-checked:bg-primary-900/20 transition-all">
+                            <i class="ph-fill ph-student text-lg"></i>
+                            <span class="font-medium">Student</span>
+                        </div>
+                    </label>
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="role" value="instructor" class="peer sr-only">
+                        <div class="h-14 rounded-xl border-2 border-neutral-200 dark:border-dark-border flex items-center justify-center gap-2 peer-checked:border-primary-500 peer-checked:bg-primary-50 dark:peer-checked:bg-primary-900/20 transition-all">
+                            <i class="ph-fill ph-chalkboard-teacher text-lg"></i>
+                            <span class="font-medium">Instructor</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <label class="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" required class="mt-1 w-5 h-5 rounded border-2 border-neutral-300 text-primary-500 focus:ring-primary-500">
+                <span class="text-sm text-neutral-500 dark:text-neutral-400">I agree to the <a href="#" class="text-primary-600 dark:text-primary-400">Terms of Service</a> and <a href="#" class="text-primary-600 dark:text-primary-400">Privacy Policy</a></span>
+            </label>
+            <button type="submit" class="w-full h-14 rounded-xl gradient-blue text-white font-semibold text-lg shadow-lg shadow-primary-500/30 ripple">Create Account</button>
+        </form>
+        <p class="mt-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
+            Already have an account? <button onclick="app.showLogin()" class="text-primary-600 dark:text-primary-400 font-semibold">Sign In</button>
+        </p>
+    </div>
+</div>
+
+<!-- ==================== DRAWER NAVIGATION ==================== -->
+<div id="drawer-overlay" onclick="app.closeDrawer()" class="fixed inset-0 z-[60] bg-black/50 hidden opacity-0 transition-opacity duration-300"></div>
+<div id="drawer" class="fixed top-0 left-0 bottom-0 w-[280px] z-[70] bg-white dark:bg-dark-surface transform -translate-x-full transition-transform duration-300 shadow-2xl">
+    <div class="h-full flex flex-col">
+        <div class="p-6 gradient-blue">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                    <i class="ph-fill ph-user text-white text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-white font-semibold" id="drawer-name">Guest User</p>
+                    <p class="text-white/70 text-sm" id="drawer-role">Student</p>
+                </div>
+            </div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 space-y-1">
+            <button onclick="app.navigate('home');app.closeDrawer()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-dark-card transition-colors text-left">
+                <i class="ph-fill ph-house text-primary-500 text-xl"></i>
+                <span class="font-medium">Home</span>
+            </button>
+            <button onclick="app.navigate('therapy');app.closeDrawer()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-dark-card transition-colors text-left">
+                <i class="ph-fill ph-tooth text-teal-500 text-xl"></i>
+                <span class="font-medium">TherapyDent</span>
+            </button>
+            <button onclick="app.navigate('academy');app.closeDrawer()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-dark-card transition-colors text-left">
+                <i class="ph-fill ph-certificate text-warning-500 text-xl"></i>
+                <span class="font-medium">EduHeTech Academy</span>
+            </button>
+            <button onclick="app.navigate('blog');app.closeDrawer()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-dark-card transition-colors text-left">
+                <i class="ph-fill ph-article text-purple-500 text-xl"></i>
+                <span class="font-medium">Blog</span>
+            </button>
+            <button onclick="app.navigate('library');app.closeDrawer()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-dark-card transition-colors text-left">
+                <i class="ph-fill ph-books text-orange-500 text-xl"></i>
+                <span class="font-medium">Library</span>
+            </button>
+            <button onclick="app.navigate('events');app.closeDrawer()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-dark-card transition-colors text-left">
+                <i class="ph-fill ph-calendar-check text-error-500 text-xl"></i>
+                <span class="font-medium">Events</span>
+            </button>
+            <div class="h-px bg-neutral-200 dark:bg-dark-border my-2"></div>
+            <button onclick="app.navigate('earn');app.closeDrawer()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-dark-card transition-colors text-left">
+                <i class="ph-fill ph-coins text-success-500 text-xl"></i>
+                <span class="font-medium">Learn & Earn</span>
+            </button>
+            <button onclick="app.navigate('referral');app.closeDrawer()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-dark-card transition-colors text-left">
+                <i class="ph-fill ph-users text-primary-500 text-xl"></i>
+                <span class="font-medium">Refer & Earn</span>
+            </button>
+            <div class="h-px bg-neutral-200 dark:bg-dark-border my-2"></div>
+            <button onclick="app.toggleDarkMode()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-dark-card transition-colors text-left">
+                <i class="ph-fill ph-moon text-neutral-500 text-xl" id="drawer-dark-icon"></i>
+                <span class="font-medium">Dark Mode</span>
+            </button>
+            <button onclick="app.navigate('settings');app.closeDrawer()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-dark-card transition-colors text-left">
+                <i class="ph-fill ph-gear text-neutral-500 text-xl"></i>
+                <span class="font-medium">Settings</span>
+            </button>
+            <button onclick="app.logout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-error-50 dark:hover:bg-error-900/20 transition-colors text-left text-error-500">
+                <i class="ph-fill ph-sign-out text-xl"></i>
+                <span class="font-medium">Log Out</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MAIN CONTENT AREA ==================== -->
+<div id="main-content" class="flex-1 overflow-hidden relative">
+
+<!-- ==================== HOME DASHBOARD ==================== -->
+<div id="page-home" class="page active pb-24">
+    <div class="sticky top-0 z-40 glass border-b border-neutral-200/50 dark:border-dark-border/50 px-4 py-3 flex items-center justify-between">
+        <button onclick="app.openDrawer()" class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-list text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+        <div class="text-center">
+            <p class="text-xs text-neutral-500 dark:text-neutral-400" id="greeting">Good Morning</p>
+            <p class="text-sm font-semibold" id="header-name">Alex</p>
+        </div>
+        <button onclick="app.showNotifications()" class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors relative">
+            <i class="ph-bold ph-bell text-xl text-neutral-700 dark:text-neutral-300"></i>
+            <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-error-500 rounded-full border-2 border-white dark:border-dark-bg"></span>
+        </button>
+    </div>
+
+    <div class="p-4 space-y-5">
+        <!-- Stats Row -->
+        <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
+            <div class="flex-shrink-0 w-[160px] h-[100px] rounded-2xl gradient-green p-4 flex flex-col justify-between card-press cursor-pointer" onclick="app.navigate('earn')">
+                <div class="flex items-center justify-between">
+                    <i class="ph-fill ph-fire text-white/80 text-2xl"></i>
+                    <span class="text-white/60 text-xs font-medium">Streak</span>
+                </div>
+                <div>
+                    <p class="text-white text-2xl font-bold">12 Days</p>
+                    <p class="text-white/70 text-xs">Keep it up!</p>
+                </div>
+            </div>
+            <div class="flex-shrink-0 w-[160px] h-[100px] rounded-2xl gradient-blue p-4 flex flex-col justify-between card-press cursor-pointer" onclick="app.navigate('earn')">
+                <div class="flex items-center justify-between">
+                    <i class="ph-fill ph-star text-white/80 text-2xl"></i>
+                    <span class="text-white/60 text-xs font-medium">Points</span>
+                </div>
+                <div>
+                    <p class="text-white text-2xl font-bold">2,450</p>
+                    <p class="text-white/70 text-xs">+120 today</p>
+                </div>
+            </div>
+            <div class="flex-shrink-0 w-[160px] h-[100px] rounded-2xl gradient-purple p-4 flex flex-col justify-between card-press cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <i class="ph-fill ph-trophy text-white/80 text-2xl"></i>
+                    <span class="text-white/60 text-xs font-medium">Level</span>
+                </div>
+                <div>
+                    <p class="text-white text-2xl font-bold">Level 5</p>
+                    <p class="text-white/70 text-xs">450 XP to 6</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Continue Learning -->
+        <div>
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-bold">Continue Learning</h2>
+                <button onclick="app.navigate('courses')" class="text-primary-600 dark:text-primary-400 text-sm font-medium">See All</button>
+            </div>
+            <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
+                <div class="flex-shrink-0 w-[280px] bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border overflow-hidden card-press cursor-pointer" onclick="app.openCourse('nursing-101')">
+                    <div class="h-[140px] bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/20 flex items-center justify-center relative">
+                        <i class="ph-duotone ph-heartbeat text-primary-400 text-5xl"></i>
+                        <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-lg">12h 30m</div>
+                    </div>
+                    <div class="p-4">
+                        <span class="text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded-full">Nursing</span>
+                        <h3 class="font-semibold mt-2 line-clamp-1">Nursing Fundamentals</h3>
+                        <div class="mt-2">
+                            <div class="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400 mb-1">
+                                <span>60% complete</span>
+                                <span>3/5 modules</span>
+                            </div>
+                            <div class="h-1.5 bg-neutral-200 dark:bg-dark-border rounded-full overflow-hidden">
+                                <div class="h-full gradient-blue rounded-full" style="width:60%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 w-[280px] bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border overflow-hidden card-press cursor-pointer">
+                    <div class="h-[140px] bg-gradient-to-br from-teal-100 to-teal-200 dark:from-teal-900/30 dark:to-teal-800/20 flex items-center justify-center relative">
+                        <i class="ph-duotone ph-tooth text-teal-400 text-5xl"></i>
+                        <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-lg">8h 15m</div>
+                    </div>
+                    <div class="p-4">
+                        <span class="text-xs font-medium text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 rounded-full">Dental</span>
+                        <h3 class="font-semibold mt-2 line-clamp-1">Dental Anatomy</h3>
+                        <div class="mt-2">
+                            <div class="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400 mb-1">
+                                <span>35% complete</span>
+                                <span>2/6 modules</span>
+                            </div>
+                            <div class="h-1.5 bg-neutral-200 dark:bg-dark-border rounded-full overflow-hidden">
+                                <div class="h-full gradient-teal rounded-full" style="width:35%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Challenge -->
+        <div class="bg-primary-50 dark:bg-primary-900/10 rounded-2xl p-4 border border-primary-100 dark:border-primary-900/20">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                        <i class="ph-fill ph-target text-primary-500 text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">Daily Challenge</h3>
+                        <p class="text-sm text-neutral-500 dark:text-neutral-400">Complete 2 quizzes today</p>
+                        <p class="text-xs text-primary-600 dark:text-primary-400 mt-1">1/2 completed</p>
+                    </div>
+                </div>
+                <button class="h-9 px-4 rounded-lg bg-primary-500 text-white text-sm font-medium">Continue</button>
+            </div>
+        </div>
+
+        <!-- Recommended Courses -->
+        <div>
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-bold">Recommended for You</h2>
+                <button onclick="app.navigate('courses')" class="text-primary-600 dark:text-primary-400 text-sm font-medium">See All</button>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border overflow-hidden card-press cursor-pointer">
+                    <div class="h-[100px] bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/20 flex items-center justify-center">
+                        <i class="ph-duotone ph-brain text-purple-400 text-4xl"></i>
+                    </div>
+                    <div class="p-3">
+                        <span class="text-[10px] font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 px-2 py-0.5 rounded-full">AI</span>
+                        <h3 class="text-sm font-semibold mt-1 line-clamp-2">AI for Healthcare</h3>
+                        <div class="flex items-center gap-1 mt-1">
+                            <i class="ph-fill ph-star text-warning-500 text-xs"></i>
+                            <span class="text-xs text-neutral-500">4.9</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border overflow-hidden card-press cursor-pointer">
+                    <div class="h-[100px] bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/20 flex items-center justify-center">
+                        <i class="ph-duotone ph-code text-orange-400 text-4xl"></i>
+                    </div>
+                    <div class="p-3">
+                        <span class="text-[10px] font-medium text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 px-2 py-0.5 rounded-full">Programming</span>
+                        <h3 class="text-sm font-semibold mt-1 line-clamp-2">Python for Beginners</h3>
+                        <div class="flex items-center gap-1 mt-1">
+                            <i class="ph-fill ph-star text-warning-500 text-xs"></i>
+                            <span class="text-xs text-neutral-500">4.7</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Latest Blog -->
+        <div>
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-bold">Latest Blog</h2>
+                <button onclick="app.navigate('blog')" class="text-primary-600 dark:text-primary-400 text-sm font-medium">See All</button>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border overflow-hidden card-press cursor-pointer" onclick="app.openBlog('blog-1')">
+                <div class="h-[180px] bg-gradient-to-br from-primary-200 to-primary-300 dark:from-primary-900/40 dark:to-primary-800/30 flex items-center justify-center">
+                    <i class="ph-duotone ph-article text-primary-500/50 text-6xl"></i>
+                </div>
+                <div class="p-4">
+                    <span class="text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded-full">Health</span>
+                    <h3 class="font-semibold mt-2 line-clamp-2">The Future of Nursing: AI-Assisted Patient Care in 2026</h3>
+                    <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">Explore how artificial intelligence is transforming nursing practices and improving patient outcomes across healthcare facilities...</p>
+                    <div class="flex items-center gap-2 mt-3 text-xs text-neutral-400">
+                        <div class="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center">
+                            <i class="ph-fill ph-user text-primary-500 text-xs"></i>
+                        </div>
+                        <span>Dr. Sarah Johnson</span>
+                        <span>•</span>
+                        <span>5 min read</span>
+                        <span>•</span>
+                        <span>2 days ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Events -->
+        <div>
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-bold">Upcoming Events</h2>
+                <button onclick="app.navigate('events')" class="text-primary-600 dark:text-primary-400 text-sm font-medium">See All</button>
+            </div>
+            <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
+                <div class="flex-shrink-0 w-[260px] bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border p-4 card-press cursor-pointer">
+                    <div class="flex items-start gap-3">
+                        <div class="w-14 h-14 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex flex-col items-center justify-center flex-shrink-0">
+                            <span class="text-xs font-bold text-primary-600 dark:text-primary-400">JUN</span>
+                            <span class="text-lg font-bold text-primary-700 dark:text-primary-300">28</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <span class="text-[10px] font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded-full">Webinar</span>
+                            <h3 class="font-semibold text-sm mt-1 line-clamp-2">Digital Health Innovation Summit</h3>
+                            <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">10:00 AM • Online</p>
+                        </div>
+                    </div>
+                    <button class="mt-3 w-full h-9 rounded-lg bg-primary-500 text-white text-sm font-medium">Register</button>
+                </div>
+                <div class="flex-shrink-0 w-[260px] bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border p-4 card-press cursor-pointer">
+                    <div class="flex items-start gap-3">
+                        <div class="w-14 h-14 rounded-xl bg-success-50 dark:bg-success-900/20 flex flex-col items-center justify-center flex-shrink-0">
+                            <span class="text-xs font-bold text-success-600 dark:text-success-400">JUL</span>
+                            <span class="text-lg font-bold text-success-700 dark:text-success-300">05</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <span class="text-[10px] font-medium text-success-600 dark:text-success-400 bg-success-50 dark:bg-success-900/20 px-2 py-0.5 rounded-full">Workshop</span>
+                            <h3 class="font-semibold text-sm mt-1 line-clamp-2">Clinical Dental Procedures Masterclass</h3>
+                            <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">2:00 PM • Lagos</p>
+                        </div>
+                    </div>
+                    <button class="mt-3 w-full h-9 rounded-lg bg-success-500 text-white text-sm font-medium">Register</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Learn & Earn Promo -->
+        <div class="rounded-2xl gradient-green p-5 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+            <div class="relative z-10">
+                <h3 class="text-white font-bold text-lg">Earn While You Learn</h3>
+                <p class="text-white/80 text-sm mt-1">Watch lessons, complete tasks, and earn real rewards</p>
+                <button onclick="app.navigate('earn')" class="mt-4 h-10 px-6 rounded-xl bg-white text-success-700 font-semibold text-sm">Start Earning</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== COURSES ==================== -->
+<div id="page-courses" class="page pb-24">
+    <div class="sticky top-0 z-40 glass border-b border-neutral-200/50 dark:border-dark-border/50 px-4 py-3 flex items-center justify-between">
+        <button onclick="app.goBack()" class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-arrow-left text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+        <h1 class="text-lg font-bold">Courses</h1>
+        <button onclick="app.showSearch()" class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-magnifying-glass text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+    </div>
+
+    <div class="p-4 space-y-5">
+        <!-- Category Tabs -->
+        <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-primary-500 text-white text-sm font-medium">All</button>
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 text-sm font-medium">Health</button>
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 text-sm font-medium">Nursing</button>
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 text-sm font-medium">Dental</button>
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 text-sm font-medium">AI</button>
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 text-sm font-medium">Code</button>
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 text-sm font-medium">Business</button>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="flex items-center gap-3">
+            <button class="flex items-center gap-2 h-9 px-3 rounded-lg bg-neutral-100 dark:bg-dark-card text-sm font-medium">
+                <i class="ph-bold ph-faders"></i>
+                Filter
+            </button>
+            <button class="flex items-center gap-2 h-9 px-3 rounded-lg bg-neutral-100 dark:bg-dark-card text-sm font-medium">
+                <i class="ph-bold ph-sort-descending"></i>
+                Popular
+            </button>
+        </div>
+
+        <!-- Course Grid -->
+        <div class="grid grid-cols-2 gap-3" id="courses-grid">
+            <div class="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border overflow-hidden card-press cursor-pointer" onclick="app.openCourse('nursing-101')">
+                <div class="h-[110px] bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/20 flex items-center justify-center relative">
+                    <i class="ph-duotone ph-heartbeat text-primary-400 text-4xl"></i>
+                    <span class="absolute top-2 right-2 text-[10px] font-bold text-white bg-success-500 px-2 py-0.5 rounded-full">FREE</span>
+                </div>
+                <div class="p-3">
+                    <span class="text-[10px] font-medium text-primary-600 dark:text-primary-400">Nursing</span>
+                    <h3 class="text-sm font-semibold mt-1 line-clamp-2">Nursing Fundamentals</h3>
+                    <div class="flex items-center gap-1 mt-1.5">
+                        <i class="ph-fill ph-star text-warning-500 text-xs"></i>
+                        <span class="text-xs font-medium">4.8</span>
+                        <span class="text-xs text-neutral-400">(2.4k)</span>
+                    </div>
+                    <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">12h 30m • 48 lessons</p>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border overflow-hidden card-press cursor-pointer">
+                <div class="h-[110px] bg-gradient-to-br from-teal-100 to-teal-200 dark:from-teal-900/30 dark:to-teal-800/20 flex items-center justify-center relative">
+                    <i class="ph-duotone ph-tooth text-teal-400 text-4xl"></i>
+                    <span class="absolute top-2 right-2 text-[10px] font-bold text-warning-700 bg-warning-100 px-2 py-0.5 rounded-full">PREMIUM</span>
+                </div>
+                <div class="p-3">
+                    <span class="text-[10px] font-medium text-teal-600 dark:text-teal-400">Dental</span>
+                    <h3 class="text-sm font-semibold mt-1 line-clamp-2">Dental Anatomy & Physiology</h3>
+                    <div class="flex items-center gap-1 mt-1.5">
+                        <i class="ph-fill ph-star text-warning-500 text-xs"></i>
+                        <span class="text-xs font-medium">4.9</span>
+                        <span class="text-xs text-neutral-400">(1.8k)</span>
+                    </div>
+                    <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">8h 15m • 32 lessons</p>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border overflow-hidden card-press cursor-pointer">
+                <div class="h-[110px] bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/20 flex items-center justify-center relative">
+                    <i class="ph-duotone ph-brain text-purple-400 text-4xl"></i>
+                    <span class="absolute top-2 right-2 text-[10px] font-bold text-white bg-success-500 px-2 py-0.5 rounded-full">FREE</span>
+                </div>
+                <div class="p-3">
+                    <span class="text-[10px] font-medium text-purple-600 dark:text-purple-400">AI</span>
+                    <h3 class="text-sm font-semibold mt-1 line-clamp-2">AI Tools for Healthcare</h3>
+                    <div class="flex items-center gap-1 mt-1.5">
+                        <i class="ph-fill ph-star text-warning-500 text-xs"></i>
+                        <span class="text-xs font-medium">4.7</span>
+                        <span class="text-xs text-neutral-400">(3.1k)</span>
+                    </div>
+                    <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">6h 45m • 24 lessons</p>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border overflow-hidden card-press cursor-pointer">
+                <div class="h-[110px] bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/20 flex items-center justify-center relative">
+                    <i class="ph-duotone ph-code text-orange-400 text-4xl"></i>
+                    <span class="absolute top-2 right-2 text-[10px] font-bold text-white bg-success-500 px-2 py-0.5 rounded-full">FREE</span>
+                </div>
+                <div class="p-3">
+                    <span class="text-[10px] font-medium text-orange-600 dark:text-orange-400">Programming</span>
+                    <h3 class="text-sm font-semibold mt-1 line-clamp-2">Python for Beginners</h3>
+                    <div class="flex items-center gap-1 mt-1.5">
+                        <i class="ph-fill ph-star text-warning-500 text-xs"></i>
+                        <span class="text-xs font-medium">4.6</span>
+                        <span class="text-xs text-neutral-400">(5.2k)</span>
+                    </div>
+                    <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">15h 20m • 60 lessons</p>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border overflow-hidden card-press cursor-pointer">
+                <div class="h-[110px] bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/20 flex items-center justify-center relative">
+                    <i class="ph-duotone ph-plant text-green-400 text-4xl"></i>
+                    <span class="absolute top-2 right-2 text-[10px] font-bold text-white bg-success-500 px-2 py-0.5 rounded-full">FREE</span>
+                </div>
+                <div class="p-3">
+                    <span class="text-[10px] font-medium text-green-600 dark:text-green-400">Agriculture</span>
+                    <h3 class="text-sm font-semibold mt-1 line-clamp-2">Modern Farming Techniques</h3>
+                    <div class="flex items-center gap-1 mt-1.5">
+                        <i class="ph-fill ph-star text-warning-500 text-xs"></i>
+                        <span class="text-xs font-medium">4.5</span>
+                        <span class="text-xs text-neutral-400">(890)</span>
+                    </div>
+                    <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">10h 00m • 40 lessons</p>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border overflow-hidden card-press cursor-pointer">
+                <div class="h-[110px] bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/20 flex items-center justify-center relative">
+                    <i class="ph-duotone ph-pill text-red-400 text-4xl"></i>
+                    <span class="absolute top-2 right-2 text-[10px] font-bold text-warning-700 bg-warning-100 px-2 py-0.5 rounded-full">PREMIUM</span>
+                </div>
+                <div class="p-3">
+                    <span class="text-[10px] font-medium text-red-600 dark:text-red-400">Pharmacy</span>
+                    <h3 class="text-sm font-semibold mt-1 line-clamp-2">Pharmacology Basics</h3>
+                    <div class="flex items-center gap-1 mt-1.5">
+                        <i class="ph-fill ph-star text-warning-500 text-xs"></i>
+                        <span class="text-xs font-medium">4.9</span>
+                        <span class="text-xs text-neutral-400">(1.2k)</span>
+                    </div>
+                    <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">20h 00m • 80 lessons</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== COURSE DETAIL ==================== -->
+<div id="page-course-detail" class="page pb-24">
+    <div class="relative">
+        <div class="h-[220px] bg-gradient-to-br from-primary-200 to-primary-300 dark:from-primary-900/40 dark:to-primary-800/30 flex items-center justify-center">
+            <i class="ph-duotone ph-heartbeat text-primary-500/40 text-8xl"></i>
+            <button onclick="app.goBack()" class="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white">
+                <i class="ph-bold ph-arrow-left text-lg"></i>
+            </button>
+            <button class="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white">
+                <i class="ph-bold ph-bookmark text-lg"></i>
+            </button>
+            <div class="absolute bottom-4 right-4 w-14 h-14 rounded-full bg-white/90 dark:bg-dark-card flex items-center justify-center shadow-lg">
+                <i class="ph-fill ph-play text-primary-500 text-2xl ml-1"></i>
+            </div>
+        </div>
+    </div>
+    <div class="p-4 space-y-4">
+        <div>
+            <span class="text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded-full">Nursing</span>
+            <h1 class="text-2xl font-bold mt-2">Nursing Fundamentals</h1>
+            <div class="flex items-center gap-3 mt-2">
+                <div class="flex items-center gap-1">
+                    <i class="ph-fill ph-star text-warning-500 text-sm"></i>
+                    <span class="text-sm font-semibold">4.8</span>
+                    <span class="text-xs text-neutral-400">(2,456 reviews)</span>
+                </div>
+                <span class="text-neutral-300">|</span>
+                <span class="text-sm text-neutral-500">12,340 students</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
+                <i class="ph-fill ph-user text-primary-500"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm font-semibold">Dr. Sarah Johnson</p>
+                <p class="text-xs text-neutral-500">Senior Nursing Instructor</p>
+            </div>
+            <button class="h-8 px-4 rounded-full border-2 border-primary-500 text-primary-600 dark:text-primary-400 text-sm font-medium">Follow</button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex border-b border-neutral-200 dark:border-dark-border">
+            <button class="flex-1 pb-3 text-sm font-semibold text-primary-600 dark:text-primary-400 border-b-2 border-primary-500">Overview</button>
+            <button class="flex-1 pb-3 text-sm font-medium text-neutral-500 dark:text-neutral-400">Curriculum</button>
+            <button class="flex-1 pb-3 text-sm font-medium text-neutral-500 dark:text-neutral-400">Reviews</button>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <h3 class="font-semibold mb-2">About This Course</h3>
+                <p class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">Master the essential skills and knowledge required for modern nursing practice. This comprehensive course covers patient care fundamentals, clinical procedures, and evidence-based practices.</p>
+            </div>
+            <div>
+                <h3 class="font-semibold mb-2">What You'll Learn</h3>
+                <div class="space-y-2">
+                    <div class="flex items-start gap-2">
+                        <i class="ph-fill ph-check-circle text-success-500 mt-0.5"></i>
+                        <span class="text-sm text-neutral-600 dark:text-neutral-400">Patient assessment and vital signs monitoring</span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <i class="ph-fill ph-check-circle text-success-500 mt-0.5"></i>
+                        <span class="text-sm text-neutral-600 dark:text-neutral-400">Medication administration and safety protocols</span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <i class="ph-fill ph-check-circle text-success-500 mt-0.5"></i>
+                        <span class="text-sm text-neutral-600 dark:text-neutral-400">Infection control and prevention strategies</span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <i class="ph-fill ph-check-circle text-success-500 mt-0.5"></i>
+                        <span class="text-sm text-neutral-600 dark:text-neutral-400">Emergency response and critical care basics</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-semibold mb-2">Course Includes</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
+                        <i class="ph-fill ph-video text-primary-500"></i>
+                        <span>48 video lessons</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
+                        <i class="ph-fill ph-file-text text-primary-500"></i>
+                        <span>24 PDF resources</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
+                        <i class="ph-fill ph-quiz text-primary-500"></i>
+                        <span>12 quizzes</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
+                        <i class="ph-fill ph-certificate text-primary-500"></i>
+                        <span>Certificate</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-dark-surface border-t border-neutral-200 dark:border-dark-border z-50">
+        <div class="flex items-center gap-3">
+            <div class="flex-1">
+                <p class="text-2xl font-bold text-success-600 dark:text-success-400">Free</p>
+                <p class="text-xs text-neutral-400">Full lifetime access</p>
+            </div>
+            <button onclick="app.enrollCourse()" class="flex-1 h-12 rounded-xl gradient-blue text-white font-semibold shadow-lg shadow-primary-500/30 ripple">Enroll Now</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== THERAPYDENT ==================== -->
+<div id="page-therapy" class="page pb-24">
+    <div class="sticky top-0 z-40 gradient-teal px-4 py-4">
+        <div class="flex items-center justify-between">
+            <button onclick="app.goBack()" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white">
+                <i class="ph-bold ph-arrow-left text-lg"></i>
+            </button>
+            <h1 class="text-lg font-bold text-white">TherapyDent</h1>
+            <button class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white">
+                <i class="ph-bold ph-magnifying-glass text-lg"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="p-4 space-y-5">
+        <!-- Hero -->
+        <div class="rounded-2xl gradient-teal p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div class="relative z-10">
+                <i class="ph-duotone ph-tooth text-white/30 text-6xl"></i>
+                <h2 class="text-white font-bold text-xl mt-2">Dental Education Hub</h2>
+                <p class="text-white/80 text-sm mt-1">Master clinical dentistry with interactive tools</p>
+                <button class="mt-4 h-10 px-5 rounded-xl bg-white text-teal-700 font-semibold text-sm">Explore Curriculum</button>
+            </div>
+        </div>
+
+        <!-- Category Grid -->
+        <div class="grid grid-cols-3 gap-3">
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 flex flex-col items-center gap-2 card-press cursor-pointer border border-neutral-100 dark:border-dark-border">
+                <div class="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
+                    <i class="ph-fill ph-book-bookmark text-teal-500 text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-center">Curriculum</span>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 flex flex-col items-center gap-2 card-press cursor-pointer border border-neutral-100 dark:border-dark-border">
+                <div class="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
+                    <i class="ph-fill ph-notebook text-teal-500 text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-center">Lecture Notes</span>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 flex flex-col items-center gap-2 card-press cursor-pointer border border-neutral-100 dark:border-dark-border">
+                <div class="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
+                    <i class="ph-fill ph-stethoscope text-teal-500 text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-center">Clinical Procs</span>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 flex flex-col items-center gap-2 card-press cursor-pointer border border-neutral-100 dark:border-dark-border">
+                <div class="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
+                    <i class="ph-fill ph-folder-open text-teal-500 text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-center">Case Studies</span>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 flex flex-col items-center gap-2 card-press cursor-pointer border border-neutral-100 dark:border-dark-border">
+                <div class="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
+                    <i class="ph-fill ph-wrench text-teal-500 text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-center">Instruments</span>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 flex flex-col items-center gap-2 card-press cursor-pointer border border-neutral-100 dark:border-dark-border">
+                <div class="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
+                    <i class="ph-fill ph-clipboard-text text-teal-500 text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-center">Treatment Plan</span>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 flex flex-col items-center gap-2 card-press cursor-pointer border border-neutral-100 dark:border-dark-border">
+                <div class="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
+                    <i class="ph-fill ph-mouth text-teal-500 text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-center">Oral Anatomy</span>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 flex flex-col items-center gap-2 card-press cursor-pointer border border-neutral-100 dark:border-dark-border">
+                <div class="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
+                    <i class="ph-fill ph-dna text-teal-500 text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-center">Oral Physiology</span>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 flex flex-col items-center gap-2 card-press cursor-pointer border border-neutral-100 dark:border-dark-border">
+                <div class="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
+                    <i class="ph-fill ph-arrows-in-line-horizontal text-teal-500 text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-center">Orthodontics</span>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 flex flex-col items-center gap-2 card-press cursor-pointer border border-neutral-100 dark:border-dark-border">
+                <div class="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
+                    <i class="ph-fill ph-heartbeat text-teal-500 text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-center">Periodontology</span>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 flex flex-col items-center gap-2 card-press cursor-pointer border border-neutral-100 dark:border-dark-border">
+                <div class="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
+                    <i class="ph-fill ph-cube text-teal-500 text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-center">3D Simulation</span>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 flex flex-col items-center gap-2 card-press cursor-pointer border border-neutral-100 dark:border-dark-border">
+                <div class="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
+                    <i class="ph-fill ph-exam text-teal-500 text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-center">Mock Exams</span>
+            </div>
+        </div>
+
+        <!-- Clinical Videos -->
+        <div>
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-bold">Clinical Videos</h2>
+                <button class="text-primary-600 dark:text-primary-400 text-sm font-medium">See All</button>
+            </div>
+            <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
+                <div class="flex-shrink-0 w-[200px] bg-white dark:bg-dark-card rounded-2xl overflow-hidden shadow-sm border border-neutral-100 dark:border-dark-border card-press cursor-pointer">
+                    <div class="h-[120px] bg-gradient-to-br from-teal-200 to-teal-300 dark:from-teal-900/40 dark:to-teal-800/30 flex items-center justify-center relative">
+                        <i class="ph-fill ph-play-circle text-white/80 text-4xl"></i>
+                        <span class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded">15:30</span>
+                    </div>
+                    <div class="p-3">
+                        <h3 class="text-sm font-semibold line-clamp-2">Root Canal Procedure</h3>
+                        <p class="text-xs text-neutral-500 mt-1">Dr. Michael Adeyemi</p>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 w-[200px] bg-white dark:bg-dark-card rounded-2xl overflow-hidden shadow-sm border border-neutral-100 dark:border-dark-border card-press cursor-pointer">
+                    <div class="h-[120px] bg-gradient-to-br from-teal-200 to-teal-300 dark:from-teal-900/40 dark:to-teal-800/30 flex items-center justify-center relative">
+                        <i class="ph-fill ph-play-circle text-white/80 text-4xl"></i>
+                        <span class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded">22:15</span>
+                    </div>
+                    <div class="p-3">
+                        <h3 class="text-sm font-semibold line-clamp-2">Dental Implant Surgery</h3>
+                        <p class="text-xs text-neutral-500 mt-1">Dr. Sarah Okafor</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== LEARN & EARN ==================== -->
+<div id="page-earn" class="page pb-24">
+    <div class="sticky top-0 z-40 glass border-b border-neutral-200/50 dark:border-dark-border/50 px-4 py-3 flex items-center justify-between">
+        <button onclick="app.goBack()" class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-arrow-left text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+        <h1 class="text-lg font-bold">Learn & Earn</h1>
+        <button class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-clock-counter-clockwise text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+    </div>
+
+    <div class="p-4 space-y-5">
+        <!-- Balance Card -->
+        <div class="rounded-2xl gradient-green p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+            <div class="relative z-10">
+                <div class="flex items-center gap-3">
+                    <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
+                        <i class="ph-fill ph-wallet text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-white/70 text-sm">Your Balance</p>
+                        <p class="text-white text-3xl font-bold">2,450 <span class="text-lg font-medium">EduPoints</span></p>
+                        <p class="text-white/70 text-sm">≈ $24.50 USD</p>
+                    </div>
+                </div>
+                <div class="flex gap-3 mt-5">
+                    <button onclick="app.showWithdraw()" class="flex-1 h-11 rounded-xl bg-white text-success-700 font-semibold text-sm">Withdraw</button>
+                    <button class="flex-1 h-11 rounded-xl border-2 border-white/50 text-white font-semibold text-sm">Convert</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Progress -->
+        <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-semibold">Daily Progress</h3>
+                <span class="text-sm text-success-600 dark:text-success-400 font-medium">3/5 tasks</span>
+            </div>
+            <div class="flex gap-2">
+                <div class="flex-1 h-2 bg-success-200 dark:bg-success-900/30 rounded-full"></div>
+                <div class="flex-1 h-2 bg-success-200 dark:bg-success-900/30 rounded-full"></div>
+                <div class="flex-1 h-2 bg-success-200 dark:bg-success-900/30 rounded-full"></div>
+                <div class="flex-1 h-2 bg-neutral-200 dark:bg-dark-border rounded-full"></div>
+                <div class="flex-1 h-2 bg-neutral-200 dark:bg-dark-border rounded-full"></div>
+            </div>
+        </div>
+
+        <!-- Earning Tasks -->
+        <div>
+            <h2 class="text-lg font-bold mb-3">Earn Points</h2>
+            <div class="space-y-3">
+                <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border flex items-center gap-4 card-press cursor-pointer" onclick="app.watchAd()">
+                    <div class="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center flex-shrink-0">
+                        <i class="ph-fill ph-play-circle text-primary-500 text-xl"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-sm">Watch Video Ad</h3>
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400">Watch a 30-second advertisement</p>
+                    </div>
+                    <span class="flex-shrink-0 h-7 px-3 rounded-full bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-400 text-xs font-bold flex items-center">+50</span>
+                </div>
+                <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border flex items-center gap-4 card-press cursor-pointer">
+                    <div class="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center flex-shrink-0">
+                        <i class="ph-fill ph-quiz text-primary-500 text-xl"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-sm">Complete Daily Quiz</h3>
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400">Test your knowledge daily</p>
+                    </div>
+                    <span class="flex-shrink-0 h-7 px-3 rounded-full bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-400 text-xs font-bold flex items-center">+100</span>
+                </div>
+                <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border flex items-center gap-4 card-press cursor-pointer">
+                    <div class="w-12 h-12 rounded-xl bg-warning-50 dark:bg-warning-900/20 flex items-center justify-center flex-shrink-0">
+                        <i class="ph-fill ph-article text-warning-500 text-xl"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-sm">Read Article</h3>
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400">Read any blog article for 2+ mins</p>
+                    </div>
+                    <span class="flex-shrink-0 h-7 px-3 rounded-full bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-400 text-xs font-bold flex items-center">+25</span>
+                </div>
+                <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border flex items-center gap-4 card-press cursor-pointer">
+                    <div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center flex-shrink-0">
+                        <i class="ph-fill ph-target text-purple-500 text-xl"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-sm">Daily Challenge</h3>
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400">Complete today's special challenge</p>
+                    </div>
+                    <span class="flex-shrink-0 h-7 px-3 rounded-full bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-400 text-xs font-bold flex items-center">+200</span>
+                </div>
+                <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border flex items-center gap-4 card-press cursor-pointer" onclick="app.navigate('referral')">
+                    <div class="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center flex-shrink-0">
+                        <i class="ph-fill ph-users text-primary-500 text-xl"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-sm">Invite Friend</h3>
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400">Share your referral code</p>
+                    </div>
+                    <span class="flex-shrink-0 h-7 px-3 rounded-full bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-400 text-xs font-bold flex items-center">+500</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div>
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-bold">Top Earners</h2>
+                <button class="text-primary-600 dark:text-primary-400 text-sm font-medium">Full Board</button>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border overflow-hidden">
+                <div class="p-4 flex items-center gap-3 border-b border-neutral-100 dark:border-dark-border">
+                    <div class="w-8 h-8 rounded-full bg-warning-100 flex items-center justify-center">
+                        <span class="text-warning-700 font-bold text-sm">1</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
+                        <i class="ph-fill ph-user text-primary-500"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-sm">Oluwaseun A.</p>
+                        <p class="text-xs text-neutral-500">Level 12 Scholar</p>
+                    </div>
+                    <span class="text-success-600 dark:text-success-400 font-bold">12,450</span>
+                </div>
+                <div class="p-4 flex items-center gap-3 border-b border-neutral-100 dark:border-dark-border">
+                    <div class="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center">
+                        <span class="text-neutral-500 font-bold text-sm">2</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
+                        <i class="ph-fill ph-user text-primary-500"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-sm">Chioma N.</p>
+                        <p class="text-xs text-neutral-500">Level 10 Scholar</p>
+                    </div>
+                    <span class="text-success-600 dark:text-success-400 font-bold">10,230</span>
+                </div>
+                <div class="p-4 flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                        <span class="text-orange-700 font-bold text-sm">3</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
+                        <i class="ph-fill ph-user text-primary-500"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-sm">Abdul K.</p>
+                        <p class="text-xs text-neutral-500">Level 9 Scholar</p>
+                    </div>
+                    <span class="text-success-600 dark:text-success-400 font-bold">9,870</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== AI TUTOR ==================== -->
+<div id="page-ai" class="page pb-24">
+    <div class="sticky top-0 z-40 glass border-b border-neutral-200/50 dark:border-dark-border/50 px-4 py-3 flex items-center justify-between">
+        <button onclick="app.goBack()" class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-arrow-left text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+        <div class="text-center">
+            <h1 class="text-lg font-bold">AI Tutor</h1>
+            <p class="text-xs text-neutral-500">GPT-4 Powered</p>
+        </div>
+        <button onclick="app.clearChat()" class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-trash text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+    </div>
+
+    <div class="p-4 space-y-4" id="chat-messages">
+        <!-- Welcome Message -->
+        <div class="flex gap-3">
+            <div class="w-9 h-9 rounded-full gradient-purple flex items-center justify-center flex-shrink-0">
+                <i class="ph-fill ph-robot text-white text-sm"></i>
+            </div>
+            <div class="bg-neutral-100 dark:bg-dark-card rounded-2xl rounded-tl-sm p-4 max-w-[85%]">
+                <p class="text-sm leading-relaxed">Hello! I'm your AI Tutor. I can help you with:</p>
+                <ul class="text-sm text-neutral-600 dark:text-neutral-400 mt-2 space-y-1">
+                    <li class="flex items-center gap-2"><i class="ph-fill ph-check-circle text-success-500 text-xs"></i>Answering academic questions</li>
+                    <li class="flex items-center gap-2"><i class="ph-fill ph-check-circle text-success-500 text-xs"></i>Explaining complex concepts</li>
+                    <li class="flex items-center gap-2"><i class="ph-fill ph-check-circle text-success-500 text-xs"></i>Summarizing notes & articles</li>
+                    <li class="flex items-center gap-2"><i class="ph-fill ph-check-circle text-success-500 text-xs"></i>Generating practice quizzes</li>
+                </ul>
+                <p class="text-sm text-neutral-600 dark:text-neutral-400 mt-2">What would you like to learn today?</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suggested Prompts -->
+    <div class="px-4 pb-2">
+        <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
+            <button onclick="app.sendPrompt('Explain photosynthesis')" class="flex-shrink-0 h-9 px-4 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-sm font-medium border border-primary-200 dark:border-primary-800">Explain photosynthesis</button>
+            <button onclick="app.sendPrompt('Quiz me on nursing')" class="flex-shrink-0 h-9 px-4 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-sm font-medium border border-primary-200 dark:border-primary-800">Quiz me on nursing</button>
+            <button onclick="app.sendPrompt('Summarize cell structure')" class="flex-shrink-0 h-9 px-4 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-sm font-medium border border-primary-200 dark:border-primary-800">Summarize cell structure</button>
+            <button onclick="app.sendPrompt('Help with dental anatomy')" class="flex-shrink-0 h-9 px-4 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-sm font-medium border border-primary-200 dark:border-primary-800">Help with dental anatomy</button>
+        </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="fixed bottom-[72px] left-0 right-0 p-4 bg-white dark:bg-dark-surface border-t border-neutral-200 dark:border-dark-border z-50">
+        <div class="flex items-end gap-2">
+            <button class="w-10 h-10 rounded-full bg-neutral-100 dark:bg-dark-card flex items-center justify-center flex-shrink-0">
+                <i class="ph-bold ph-paperclip text-neutral-500"></i>
+            </button>
+            <div class="flex-1 bg-neutral-100 dark:bg-dark-card rounded-2xl px-4 py-2.5 flex items-end">
+                <textarea id="chat-input" rows="1" class="w-full bg-transparent outline-none resize-none text-sm max-h-24" placeholder="Ask anything..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();app.sendMessage()}"></textarea>
+            </div>
+            <button onclick="app.sendMessage()" class="w-10 h-10 rounded-full gradient-blue flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary-500/30">
+                <i class="ph-bold ph-paper-plane-right text-white"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== COMMUNITY ==================== -->
+<div id="page-community" class="page pb-24">
+    <div class="sticky top-0 z-40 glass border-b border-neutral-200/50 dark:border-dark-border/50 px-4 py-3 flex items-center justify-between">
+        <button onclick="app.openDrawer()" class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-list text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+        <h1 class="text-lg font-bold">Community</h1>
+        <button class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-magnifying-glass text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+    </div>
+
+    <div class="p-4 space-y-5">
+        <!-- Tabs -->
+        <div class="flex bg-neutral-100 dark:bg-dark-card rounded-xl p-1">
+            <button class="flex-1 h-9 rounded-lg bg-white dark:bg-dark-surface shadow-sm text-sm font-semibold">Forums</button>
+            <button class="flex-1 h-9 rounded-lg text-sm font-medium text-neutral-500 dark:text-neutral-400">Groups</button>
+            <button class="flex-1 h-9 rounded-lg text-sm font-medium text-neutral-500 dark:text-neutral-400">Q&A</button>
+        </div>
+
+        <!-- Discussion Cards -->
+        <div class="space-y-3">
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border card-press cursor-pointer">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                        <i class="ph-fill ph-user text-primary-500"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-sm">Best resources for NCLEX preparation?</h3>
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">I'm preparing for the NCLEX exam next month and looking for the best study materials and practice questions. Any recommendations?</p>
+                        <div class="flex items-center gap-3 mt-2">
+                            <span class="text-[10px] font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded-full">Nursing</span>
+                            <span class="text-[10px] font-medium text-neutral-500">24 replies</span>
+                            <span class="text-[10px] text-neutral-400">2h ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border card-press cursor-pointer">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                        <i class="ph-fill ph-user text-teal-500"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-sm">Understanding dental occlusion patterns</h3>
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">Can someone explain the difference between Class I, II, and III occlusion with clinical examples?</p>
+                        <div class="flex items-center gap-3 mt-2">
+                            <span class="text-[10px] font-medium text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 rounded-full">Dental</span>
+                            <span class="text-[10px] font-medium text-neutral-500">18 replies</span>
+                            <span class="text-[10px] text-neutral-400">5h ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border card-press cursor-pointer">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                        <i class="ph-fill ph-user text-purple-500"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-sm">AI tools for medical diagnosis - ethical concerns?</h3>
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">With the rise of AI in healthcare, what are the ethical implications we should consider as future healthcare professionals?</p>
+                        <div class="flex items-center gap-3 mt-2">
+                            <span class="text-[10px] font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 px-2 py-0.5 rounded-full">AI</span>
+                            <span class="text-[10px] font-medium text-neutral-500">45 replies</span>
+                            <span class="text-[10px] text-neutral-400">1d ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAB -->
+    <button class="fixed bottom-24 right-4 w-14 h-14 rounded-full gradient-blue text-white flex items-center justify-center shadow-lg shadow-primary-500/40 z-50">
+        <i class="ph-bold ph-plus text-2xl"></i>
+    </button>
+</div>
+
+<!-- ==================== PROFILE ==================== -->
+<div id="page-profile" class="page pb-24">
+    <div class="sticky top-0 z-40 glass border-b border-neutral-200/50 dark:border-dark-border/50 px-4 py-3 flex items-center justify-between">
+        <button onclick="app.openDrawer()" class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-list text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+        <h1 class="text-lg font-bold">Profile</h1>
+        <button onclick="app.navigate('settings')" class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-gear text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+    </div>
+
+    <div class="p-4 space-y-5">
+        <!-- Profile Header -->
+        <div class="bg-white dark:bg-dark-card rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-dark-border text-center">
+            <div class="w-24 h-24 rounded-full gradient-blue mx-auto flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-primary-500/30">
+                A
+            </div>
+            <h2 class="text-xl font-bold mt-4">Alex Johnson</h2>
+            <p class="text-sm text-neutral-500 dark:text-neutral-400">@alexj • Student</p>
+            <p class="text-sm text-neutral-600 dark:text-neutral-400 mt-2 max-w-xs mx-auto">Final year Nursing student passionate about digital health and AI in healthcare.</p>
+            <button class="mt-4 h-10 px-6 rounded-full border-2 border-primary-500 text-primary-600 dark:text-primary-400 font-medium text-sm">Edit Profile</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-4 gap-3">
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-3 shadow-sm border border-neutral-100 dark:border-dark-border text-center">
+                <p class="text-xl font-bold text-primary-600 dark:text-primary-400">12</p>
+                <p class="text-xs text-neutral-500 mt-0.5">Courses</p>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-3 shadow-sm border border-neutral-100 dark:border-dark-border text-center">
+                <p class="text-xl font-bold text-success-600 dark:text-success-400">5</p>
+                <p class="text-xs text-neutral-500 mt-0.5">Certificates</p>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-3 shadow-sm border border-neutral-100 dark:border-dark-border text-center">
+                <p class="text-xl font-bold text-warning-600 dark:text-warning-400">2.4k</p>
+                <p class="text-xs text-neutral-500 mt-0.5">Points</p>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-3 shadow-sm border border-neutral-100 dark:border-dark-border text-center">
+                <p class="text-xl font-bold text-error-600 dark:text-error-400">12</p>
+                <p class="text-xs text-neutral-500 mt-0.5">Streak</p>
+            </div>
+        </div>
+
+        <!-- Menu Items -->
+        <div class="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border overflow-hidden">
+            <button onclick="app.navigate('courses')" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-neutral-50 dark:hover:bg-dark-surface transition-colors text-left border-b border-neutral-100 dark:border-dark-border">
+                <div class="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
+                    <i class="ph-fill ph-book-open text-primary-500 text-lg"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-semibold text-sm">My Courses</p>
+                    <p class="text-xs text-neutral-500">12 enrolled courses</p>
+                </div>
+                <i class="ph-bold ph-caret-right text-neutral-400"></i>
+            </button>
+            <button class="w-full flex items-center gap-4 px-5 py-4 hover:bg-neutral-50 dark:hover:bg-dark-surface transition-colors text-left border-b border-neutral-100 dark:border-dark-border">
+                <div class="w-10 h-10 rounded-xl bg-success-50 dark:bg-success-900/20 flex items-center justify-center">
+                    <i class="ph-fill ph-certificate text-success-500 text-lg"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-semibold text-sm">Certificates</p>
+                    <p class="text-xs text-neutral-500">5 earned certificates</p>
+                </div>
+                <i class="ph-bold ph-caret-right text-neutral-400"></i>
+            </button>
+            <button onclick="app.navigate('earn')" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-neutral-50 dark:hover:bg-dark-surface transition-colors text-left border-b border-neutral-100 dark:border-dark-border">
+                <div class="w-10 h-10 rounded-xl bg-warning-50 dark:bg-warning-900/20 flex items-center justify-center">
+                    <i class="ph-fill ph-wallet text-warning-500 text-lg"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-semibold text-sm">Wallet</p>
+                    <p class="text-xs text-neutral-500">2,450 EduPoints</p>
+                </div>
+                <i class="ph-bold ph-caret-right text-neutral-400"></i>
+            </button>
+            <button class="w-full flex items-center gap-4 px-5 py-4 hover:bg-neutral-50 dark:hover:bg-dark-surface transition-colors text-left border-b border-neutral-100 dark:border-dark-border">
+                <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
+                    <i class="ph-fill ph-download-simple text-purple-500 text-lg"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-semibold text-sm">Downloads</p>
+                    <p class="text-xs text-neutral-500">8 offline resources</p>
+                </div>
+                <i class="ph-bold ph-caret-right text-neutral-400"></i>
+            </button>
+            <button class="w-full flex items-center gap-4 px-5 py-4 hover:bg-neutral-50 dark:hover:bg-dark-surface transition-colors text-left">
+                <div class="w-10 h-10 rounded-xl bg-error-50 dark:bg-error-900/20 flex items-center justify-center">
+                    <i class="ph-fill ph-bell text-error-500 text-lg"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-semibold text-sm">Notifications</p>
+                    <p class="text-xs text-neutral-500">3 unread notifications</p>
+                </div>
+                <span class="w-5 h-5 rounded-full bg-error-500 text-white text-xs flex items-center justify-center font-bold">3</span>
+            </button>
+        </div>
+
+        <!-- Achievements -->
+        <div>
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-bold">Achievements</h2>
+                <button class="text-primary-600 dark:text-primary-400 text-sm font-medium">View All</button>
+            </div>
+            <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
+                <div class="flex-shrink-0 w-[100px] bg-white dark:bg-dark-card rounded-2xl p-3 shadow-sm border border-neutral-100 dark:border-dark-border text-center">
+                    <div class="w-12 h-12 rounded-full bg-warning-100 mx-auto flex items-center justify-center">
+                        <i class="ph-fill ph-fire text-warning-500 text-xl"></i>
+                    </div>
+                    <p class="text-xs font-semibold mt-2">7-Day Streak</p>
+                    <p class="text-[10px] text-neutral-400">Completed</p>
+                </div>
+                <div class="flex-shrink-0 w-[100px] bg-white dark:bg-dark-card rounded-2xl p-3 shadow-sm border border-neutral-100 dark:border-dark-border text-center">
+                    <div class="w-12 h-12 rounded-full bg-primary-100 mx-auto flex items-center justify-center">
+                        <i class="ph-fill ph-graduation-cap text-primary-500 text-xl"></i>
+                    </div>
+                    <p class="text-xs font-semibold mt-2">First Course</p>
+                    <p class="text-[10px] text-neutral-400">Completed</p>
+                </div>
+                <div class="flex-shrink-0 w-[100px] bg-white dark:bg-dark-card rounded-2xl p-3 shadow-sm border border-neutral-100 dark:border-dark-border text-center">
+                    <div class="w-12 h-12 rounded-full bg-success-100 mx-auto flex items-center justify-center">
+                        <i class="ph-fill ph-quiz text-success-500 text-xl"></i>
+                    </div>
+                    <p class="text-xs font-semibold mt-2">Quiz Master</p>
+                    <p class="text-[10px] text-neutral-400">In Progress</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== BLOG ==================== -->
+<div id="page-blog" class="page pb-24">
+    <div class="sticky top-0 z-40 glass border-b border-neutral-200/50 dark:border-dark-border/50 px-4 py-3 flex items-center justify-between">
+        <button onclick="app.goBack()" class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-arrow-left text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+        <h1 class="text-lg font-bold">Blog</h1>
+        <button class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-bookmarks text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+    </div>
+
+    <div class="p-4 space-y-5">
+        <!-- Search -->
+        <div class="relative">
+            <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+            <input type="text" class="w-full h-12 pl-11 pr-4 rounded-xl bg-neutral-100 dark:bg-dark-card border-2 border-transparent focus:border-primary-500 outline-none text-sm" placeholder="Search articles...">
+        </div>
+
+        <!-- Category Pills -->
+        <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-primary-500 text-white text-sm font-medium">All</button>
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 text-sm font-medium">Education</button>
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 text-sm font-medium">Health</button>
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 text-sm font-medium">AI</button>
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 text-sm font-medium">Technology</button>
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 text-sm font-medium">Career</button>
+        </div>
+
+        <!-- Featured Article -->
+        <div class="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border overflow-hidden card-press cursor-pointer" onclick="app.openBlog('blog-1')">
+            <div class="h-[200px] bg-gradient-to-br from-primary-200 to-primary-300 dark:from-primary-900/40 dark:to-primary-800/30 flex items-center justify-center">
+                <i class="ph-duotone ph-article text-primary-500/40 text-7xl"></i>
+            </div>
+            <div class="p-4">
+                <span class="text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded-full">Health</span>
+                <h2 class="font-bold text-lg mt-2 line-clamp-2">The Future of Nursing: AI-Assisted Patient Care in 2026</h2>
+                <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-2 line-clamp-2">Explore how artificial intelligence is transforming nursing practices and improving patient outcomes across healthcare facilities worldwide...</p>
+                <div class="flex items-center gap-2 mt-3 text-xs text-neutral-400">
+                    <div class="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center">
+                        <i class="ph-fill ph-user text-primary-500 text-xs"></i>
+                    </div>
+                    <span>Dr. Sarah Johnson</span>
+                    <span>•</span>
+                    <span>5 min read</span>
+                    <span>•</span>
+                    <span>2 days ago</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Article List -->
+        <div class="space-y-3">
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border flex gap-4 card-press cursor-pointer">
+                <div class="w-24 h-24 rounded-xl bg-gradient-to-br from-teal-100 to-teal-200 dark:from-teal-900/30 dark:to-teal-800/20 flex items-center justify-center flex-shrink-0">
+                    <i class="ph-duotone ph-tooth text-teal-400 text-3xl"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <span class="text-[10px] font-medium text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 rounded-full">Dental</span>
+                    <h3 class="font-semibold text-sm mt-1 line-clamp-2">5 Common Dental Myths Debunked by Science</h3>
+                    <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">Separating fact from fiction in oral health care...</p>
+                    <div class="flex items-center gap-2 mt-2 text-xs text-neutral-400">
+                        <span>Dr. Mike O.</span>
+                        <span>•</span>
+                        <span>3 min read</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border flex gap-4 card-press cursor-pointer">
+                <div class="w-24 h-24 rounded-xl bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/20 flex items-center justify-center flex-shrink-0">
+                    <i class="ph-duotone ph-brain text-purple-400 text-3xl"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <span class="text-[10px] font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 px-2 py-0.5 rounded-full">AI</span>
+                    <h3 class="font-semibold text-sm mt-1 line-clamp-2">How AI is Revolutionizing Medical Education</h3>
+                    <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">From virtual patients to personalized learning paths...</p>
+                    <div class="flex items-center gap-2 mt-2 text-xs text-neutral-400">
+                        <span>Prof. A. Khan</span>
+                        <span>•</span>
+                        <span>7 min read</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== BLOG DETAIL ==================== -->
+<div id="page-blog-detail" class="page pb-24">
+    <div class="relative">
+        <div class="h-[240px] bg-gradient-to-br from-primary-200 to-primary-300 dark:from-primary-900/40 dark:to-primary-800/30 flex items-center justify-center">
+            <i class="ph-duotone ph-article text-primary-500/30 text-8xl"></i>
+            <button onclick="app.goBack()" class="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white">
+                <i class="ph-bold ph-arrow-left text-lg"></i>
+            </button>
+            <button class="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white">
+                <i class="ph-bold ph-share-network text-lg"></i>
+            </button>
+        </div>
+    </div>
+    <div class="p-4 space-y-4">
+        <span class="text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded-full">Health</span>
+        <h1 class="text-2xl font-bold">The Future of Nursing: AI-Assisted Patient Care in 2026</h1>
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
+                <i class="ph-fill ph-user text-primary-500"></i>
+            </div>
+            <div>
+                <p class="text-sm font-semibold">Dr. Sarah Johnson</p>
+                <p class="text-xs text-neutral-500">June 25, 2026 • 5 min read</p>
+            </div>
+            <button class="ml-auto h-8 px-4 rounded-full border-2 border-primary-500 text-primary-600 dark:text-primary-400 text-sm font-medium">Follow</button>
+        </div>
+        <div class="prose dark:prose-invert max-w-none">
+            <p class="text-neutral-600 dark:text-neutral-400 leading-relaxed">The integration of artificial intelligence into nursing practice is no longer a distant future—it's happening now. In 2026, we're witnessing a transformation that promises to enhance patient care, reduce clinical errors, and empower nurses with unprecedented decision-making support.</p>
+            <h3 class="text-lg font-bold mt-6 mb-3">AI-Powered Diagnostic Assistance</h3>
+            <p class="text-neutral-600 dark:text-neutral-400 leading-relaxed">Modern AI systems can analyze patient data in real-time, alerting nurses to potential complications before they become critical. These systems process vital signs, lab results, and historical data to provide actionable insights.</p>
+            <h3 class="text-lg font-bold mt-6 mb-3">Virtual Nursing Assistants</h3>
+            <p class="text-neutral-600 dark:text-neutral-400 leading-relaxed">AI-powered chatbots and virtual assistants are handling routine patient inquiries, medication reminders, and discharge instructions, allowing nurses to focus on complex care needs.</p>
+        </div>
+    </div>
+    <!-- Action Bar -->
+    <div class="fixed bottom-[72px] left-0 right-0 p-4 bg-white dark:bg-dark-surface border-t border-neutral-200 dark:border-dark-border z-50">
+        <div class="flex items-center justify-around">
+            <button class="flex items-center gap-2 text-neutral-500 dark:text-neutral-400">
+                <i class="ph-bold ph-heart text-xl"></i>
+                <span class="text-sm">245</span>
+            </button>
+            <button class="flex items-center gap-2 text-neutral-500 dark:text-neutral-400">
+                <i class="ph-bold ph-chat-circle text-xl"></i>
+                <span class="text-sm">42</span>
+            </button>
+            <button class="flex items-center gap-2 text-neutral-500 dark:text-neutral-400">
+                <i class="ph-bold ph-share-network text-xl"></i>
+                <span class="text-sm">Share</span>
+            </button>
+            <button class="flex items-center gap-2 text-neutral-500 dark:text-neutral-400">
+                <i class="ph-bold ph-bookmark text-xl"></i>
+                <span class="text-sm">Save</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== LIBRARY ==================== -->
+<div id="page-library" class="page pb-24">
+    <div class="sticky top-0 z-40 glass border-b border-neutral-200/50 dark:border-dark-border/50 px-4 py-3 flex items-center justify-between">
+        <button onclick="app.goBack()" class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-arrow-left text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+        <h1 class="text-lg font-bold">Library</h1>
+        <button class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-faders text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+    </div>
+
+    <div class="p-4 space-y-5">
+        <!-- Category Tabs -->
+        <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-primary-500 text-white text-sm font-medium">All</button>
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 text-sm font-medium">PDFs</button>
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 text-sm font-medium">Journals</button>
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 text-sm font-medium">Notes</button>
+            <button class="flex-shrink-0 h-9 px-4 rounded-full bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 text-sm font-medium">Past Qs</button>
+        </div>
+
+        <!-- Search -->
+        <div class="relative">
+            <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+            <input type="text" class="w-full h-12 pl-11 pr-4 rounded-xl bg-neutral-100 dark:bg-dark-card border-2 border-transparent focus:border-primary-500 outline-none text-sm" placeholder="Search resources...">
+        </div>
+
+        <!-- Resources Grid -->
+        <div class="grid grid-cols-2 gap-3">
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border card-press cursor-pointer">
+                <div class="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-3">
+                    <i class="ph-fill ph-file-pdf text-red-500 text-2xl"></i>
+                </div>
+                <h3 class="font-semibold text-sm line-clamp-2">Nursing Procedures Handbook 2026</h3>
+                <p class="text-xs text-neutral-500 mt-1">PDF • 4.2 MB</p>
+                <div class="flex items-center gap-2 mt-2">
+                    <button class="flex-1 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-xs font-medium flex items-center justify-center gap-1">
+                        <i class="ph-bold ph-download-simple"></i> Download
+                    </button>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border card-press cursor-pointer">
+                <div class="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center mb-3">
+                    <i class="ph-fill ph-file-text text-teal-500 text-2xl"></i>
+                </div>
+                <h3 class="font-semibold text-sm line-clamp-2">Dental Anatomy Atlas</h3>
+                <p class="text-xs text-neutral-500 mt-1">PDF • 12.5 MB</p>
+                <div class="flex items-center gap-2 mt-2">
+                    <button class="flex-1 h-8 rounded-lg bg-success-50 dark:bg-success-900/20 text-success-600 dark:text-success-400 text-xs font-medium flex items-center justify-center gap-1">
+                        <i class="ph-bold ph-check"></i> Downloaded
+                    </button>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border card-press cursor-pointer">
+                <div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center mb-3">
+                    <i class="ph-fill ph-journal text-purple-500 text-2xl"></i>
+                </div>
+                <h3 class="font-semibold text-sm line-clamp-2">AI in Healthcare Research</h3>
+                <p class="text-xs text-neutral-500 mt-1">Journal • 2026</p>
+                <div class="flex items-center gap-2 mt-2">
+                    <button class="flex-1 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-xs font-medium flex items-center justify-center gap-1">
+                        <i class="ph-bold ph-download-simple"></i> Download
+                    </button>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border card-press cursor-pointer">
+                <div class="w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center mb-3">
+                    <i class="ph-fill ph-exam text-orange-500 text-2xl"></i>
+                </div>
+                <h3 class="font-semibold text-sm line-clamp-2">Past Questions: Nursing Council</h3>
+                <p class="text-xs text-neutral-500 mt-1">PDF • 2.1 MB</p>
+                <div class="flex items-center gap-2 mt-2">
+                    <button class="flex-1 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-xs font-medium flex items-center justify-center gap-1">
+                        <i class="ph-bold ph-download-simple"></i> Download
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Offline Section -->
+        <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-semibold">Downloaded</h3>
+                <span class="text-xs text-neutral-500">1.2 GB used</span>
+            </div>
+            <div class="space-y-2">
+                <div class="flex items-center gap-3 p-2 rounded-xl bg-neutral-50 dark:bg-dark-surface">
+                    <div class="w-10 h-10 rounded-lg bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
+                        <i class="ph-fill ph-file-text text-teal-500"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium line-clamp-1">Dental Anatomy Atlas</p>
+                        <p class="text-xs text-neutral-500">12.5 MB</p>
+                    </div>
+                    <button class="w-8 h-8 rounded-lg hover:bg-error-50 flex items-center justify-center text-neutral-400 hover:text-error-500">
+                        <i class="ph-bold ph-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== EVENTS ==================== -->
+<div id="page-events" class="page pb-24">
+    <div class="sticky top-0 z-40 glass border-b border-neutral-200/50 dark:border-dark-border/50 px-4 py-3 flex items-center justify-between">
+        <button onclick="app.goBack()" class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-arrow-left text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+        <h1 class="text-lg font-bold">Events</h1>
+        <button class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-calendar text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+    </div>
+
+    <div class="p-4 space-y-5">
+        <!-- Calendar Strip -->
+        <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+            <div class="flex-shrink-0 w-14 h-16 rounded-xl bg-primary-500 text-white flex flex-col items-center justify-center">
+                <span class="text-xs">MON</span>
+                <span class="text-lg font-bold">24</span>
+            </div>
+            <div class="flex-shrink-0 w-14 h-16 rounded-xl bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 flex flex-col items-center justify-center">
+                <span class="text-xs">TUE</span>
+                <span class="text-lg font-bold">25</span>
+            </div>
+            <div class="flex-shrink-0 w-14 h-16 rounded-xl bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 flex flex-col items-center justify-center">
+                <span class="text-xs">WED</span>
+                <span class="text-lg font-bold">26</span>
+            </div>
+            <div class="flex-shrink-0 w-14 h-16 rounded-xl bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 flex flex-col items-center justify-center">
+                <span class="text-xs">THU</span>
+                <span class="text-lg font-bold">27</span>
+            </div>
+            <div class="flex-shrink-0 w-14 h-16 rounded-xl bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 flex flex-col items-center justify-center">
+                <span class="text-xs">FRI</span>
+                <span class="text-lg font-bold">28</span>
+            </div>
+            <div class="flex-shrink-0 w-14 h-16 rounded-xl bg-neutral-100 dark:bg-dark-card text-neutral-600 dark:text-neutral-400 flex flex-col items-center justify-center">
+                <span class="text-xs">SAT</span>
+                <span class="text-lg font-bold">29</span>
+            </div>
+        </div>
+
+        <!-- Events List -->
+        <div class="space-y-3">
+            <h2 class="text-lg font-bold">Today</h2>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border card-press cursor-pointer">
+                <div class="flex items-start gap-4">
+                    <div class="w-16 h-16 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex flex-col items-center justify-center flex-shrink-0">
+                        <span class="text-xs font-bold text-primary-600 dark:text-primary-400">JUN</span>
+                        <span class="text-xl font-bold text-primary-700 dark:text-primary-300">24</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <span class="text-[10px] font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded-full">Webinar</span>
+                        <h3 class="font-semibold mt-1">Digital Health Innovation Summit</h3>
+                        <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-1">10:00 AM • Online (Zoom)</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <div class="flex -space-x-2">
+                                <div class="w-6 h-6 rounded-full bg-primary-100 border-2 border-white dark:border-dark-card"></div>
+                                <div class="w-6 h-6 rounded-full bg-success-100 border-2 border-white dark:border-dark-card"></div>
+                                <div class="w-6 h-6 rounded-full bg-warning-100 border-2 border-white dark:border-dark-card"></div>
+                            </div>
+                            <span class="text-xs text-neutral-500">+234 attending</span>
+                        </div>
+                        <button class="mt-3 h-9 w-full rounded-lg bg-primary-500 text-white text-sm font-medium">Register Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-3">
+            <h2 class="text-lg font-bold">Upcoming</h2>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border card-press cursor-pointer">
+                <div class="flex items-start gap-4">
+                    <div class="w-16 h-16 rounded-xl bg-success-50 dark:bg-success-900/20 flex flex-col items-center justify-center flex-shrink-0">
+                        <span class="text-xs font-bold text-success-600 dark:text-success-400">JUL</span>
+                        <span class="text-xl font-bold text-success-700 dark:text-success-300">05</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <span class="text-[10px] font-medium text-success-600 dark:text-success-400 bg-success-50 dark:bg-success-900/20 px-2 py-0.5 rounded-full">Workshop</span>
+                        <h3 class="font-semibold mt-1">Clinical Dental Procedures Masterclass</h3>
+                        <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-1">2:00 PM • Lagos, Nigeria</p>
+                        <button class="mt-3 h-9 w-full rounded-lg border-2 border-primary-500 text-primary-600 dark:text-primary-400 text-sm font-medium">Register</button>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border card-press cursor-pointer">
+                <div class="flex items-start gap-4">
+                    <div class="w-16 h-16 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex flex-col items-center justify-center flex-shrink-0">
+                        <span class="text-xs font-bold text-purple-600 dark:text-purple-400">JUL</span>
+                        <span class="text-xl font-bold text-purple-700 dark:text-purple-300">12</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <span class="text-[10px] font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 px-2 py-0.5 rounded-full">Conference</span>
+                        <h3 class="font-semibold mt-1">African Health Tech Conference 2026</h3>
+                        <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-1">9:00 AM • Nairobi, Kenya</p>
+                        <button class="mt-3 h-9 w-full rounded-lg border-2 border-primary-500 text-primary-600 dark:text-primary-400 text-sm font-medium">Register</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== ACADEMY ==================== -->
+<div id="page-academy" class="page pb-24">
+    <div class="sticky top-0 z-40 glass border-b border-neutral-200/50 dark:border-dark-border/50 px-4 py-3 flex items-center justify-between">
+        <button onclick="app.goBack()" class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-arrow-left text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+        <h1 class="text-lg font-bold">EduHeTech Academy</h1>
+        <button class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-shopping-cart text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+    </div>
+
+    <div class="p-4 space-y-5">
+        <!-- Hero -->
+        <div class="rounded-2xl gradient-orange p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div class="relative z-10">
+                <span class="inline-block text-[10px] font-bold text-warning-700 bg-warning-100 px-2 py-0.5 rounded-full mb-2">PREMIUM</span>
+                <h2 class="text-white font-bold text-xl">Premium Skills Training</h2>
+                <p class="text-white/80 text-sm mt-1">Live classes, real projects, industry certificates</p>
+                <button class="mt-4 h-10 px-5 rounded-xl bg-white text-warning-700 font-semibold text-sm">Browse Courses</button>
+            </div>
+        </div>
+
+        <!-- Live Now -->
+        <div>
+            <div class="flex items-center gap-2 mb-3">
+                <span class="w-2 h-2 rounded-full bg-error-500 animate-pulse"></span>
+                <h2 class="text-lg font-bold">Live Classes</h2>
+            </div>
+            <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
+                <div class="flex-shrink-0 w-[260px] bg-white dark:bg-dark-card rounded-2xl overflow-hidden shadow-sm border border-neutral-100 dark:border-dark-border card-press cursor-pointer">
+                    <div class="h-[140px] bg-gradient-to-br from-purple-200 to-purple-300 dark:from-purple-900/40 dark:to-purple-800/30 flex items-center justify-center relative">
+                        <i class="ph-duotone ph-code text-purple-500/40 text-6xl"></i>
+                        <div class="absolute top-3 left-3 flex items-center gap-1.5 bg-error-500 text-white text-xs px-2 py-1 rounded-full">
+                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                            LIVE
+                        </div>
+                        <div class="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-lg">142 watching</div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-sm">Android App Development Masterclass</h3>
+                        <p class="text-xs text-neutral-500 mt-1">John Doe • Software Engineer</p>
+                        <button class="mt-3 w-full h-9 rounded-lg bg-error-500 text-white text-sm font-medium">Join Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Course Categories -->
+        <div>
+            <h2 class="text-lg font-bold mb-3">Course Categories</h2>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border card-press cursor-pointer">
+                    <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center mb-2">
+                        <i class="ph-fill ph-brain text-purple-500 text-lg"></i>
+                    </div>
+                    <h3 class="font-semibold text-sm">AI Tools</h3>
+                    <p class="text-xs text-neutral-500 mt-1">8 courses</p>
+                </div>
+                <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border card-press cursor-pointer">
+                    <div class="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center mb-2">
+                        <i class="ph-fill ph-device-mobile text-green-500 text-lg"></i>
+                    </div>
+                    <h3 class="font-semibold text-sm">Android Dev</h3>
+                    <p class="text-xs text-neutral-500 mt-1">12 courses</p>
+                </div>
+                <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border card-press cursor-pointer">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mb-2">
+                        <i class="ph-fill ph-globe text-blue-500 text-lg"></i>
+                    </div>
+                    <h3 class="font-semibold text-sm">Web Dev</h3>
+                    <p class="text-xs text-neutral-500 mt-1">15 courses</p>
+                </div>
+                <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border card-press cursor-pointer">
+                    <div class="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center mb-2">
+                        <i class="ph-fill ph-megaphone text-orange-500 text-lg"></i>
+                    </div>
+                    <h3 class="font-semibold text-sm">Digital Marketing</h3>
+                    <p class="text-xs text-neutral-500 mt-1">6 courses</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== SETTINGS ==================== -->
+<div id="page-settings" class="page pb-24">
+    <div class="sticky top-0 z-40 glass border-b border-neutral-200/50 dark:border-dark-border/50 px-4 py-3 flex items-center justify-between">
+        <button onclick="app.goBack()" class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-arrow-left text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+        <h1 class="text-lg font-bold">Settings</h1>
+        <div class="w-10"></div>
+    </div>
+
+    <div class="p-4 space-y-5">
+        <!-- Account -->
+        <div class="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border overflow-hidden">
+            <div class="px-5 py-3 border-b border-neutral-100 dark:border-dark-border">
+                <h3 class="font-semibold text-sm text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">Account</h3>
+            </div>
+            <button class="w-full flex items-center gap-4 px-5 py-4 hover:bg-neutral-50 dark:hover:bg-dark-surface transition-colors text-left border-b border-neutral-100 dark:border-dark-border">
+                <i class="ph-bold ph-user text-neutral-500 text-xl"></i>
+                <div class="flex-1">
+                    <p class="font-medium text-sm">Personal Information</p>
+                </div>
+                <i class="ph-bold ph-caret-right text-neutral-400"></i>
+            </button>
+            <button class="w-full flex items-center gap-4 px-5 py-4 hover:bg-neutral-50 dark:hover:bg-dark-surface transition-colors text-left border-b border-neutral-100 dark:border-dark-border">
+                <i class="ph-bold ph-lock text-neutral-500 text-xl"></i>
+                <div class="flex-1">
+                    <p class="font-medium text-sm">Password & Security</p>
+                </div>
+                <i class="ph-bold ph-caret-right text-neutral-400"></i>
+            </button>
+            <button class="w-full flex items-center gap-4 px-5 py-4 hover:bg-neutral-50 dark:hover:bg-dark-surface transition-colors text-left">
+                <i class="ph-bold ph-bell text-neutral-500 text-xl"></i>
+                <div class="flex-1">
+                    <p class="font-medium text-sm">Notification Preferences</p>
+                </div>
+                <i class="ph-bold ph-caret-right text-neutral-400"></i>
+            </button>
+        </div>
+
+        <!-- App Settings -->
+        <div class="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border overflow-hidden">
+            <div class="px-5 py-3 border-b border-neutral-100 dark:border-dark-border">
+                <h3 class="font-semibold text-sm text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">App Settings</h3>
+            </div>
+            <div class="flex items-center gap-4 px-5 py-4 border-b border-neutral-100 dark:border-dark-border">
+                <i class="ph-bold ph-moon text-neutral-500 text-xl"></i>
+                <div class="flex-1">
+                    <p class="font-medium text-sm">Dark Mode</p>
+                </div>
+                <button onclick="app.toggleDarkMode()" id="dark-mode-toggle" class="w-12 h-7 rounded-full bg-neutral-300 dark:bg-primary-500 relative transition-colors">
+                    <span class="absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-transform dark:translate-x-5"></span>
+                </button>
+            </div>
+            <button class="w-full flex items-center gap-4 px-5 py-4 hover:bg-neutral-50 dark:hover:bg-dark-surface transition-colors text-left border-b border-neutral-100 dark:border-dark-border">
+                <i class="ph-bold ph-globe text-neutral-500 text-xl"></i>
+                <div class="flex-1">
+                    <p class="font-medium text-sm">Language</p>
+                    <p class="text-xs text-neutral-500">English (US)</p>
+                </div>
+                <i class="ph-bold ph-caret-right text-neutral-400"></i>
+            </button>
+            <button class="w-full flex items-center gap-4 px-5 py-4 hover:bg-neutral-50 dark:hover:bg-dark-surface transition-colors text-left">
+                <i class="ph-bold ph-download-simple text-neutral-500 text-xl"></i>
+                <div class="flex-1">
+                    <p class="font-medium text-sm">Download Quality</p>
+                    <p class="text-xs text-neutral-500">High (720p)</p>
+                </div>
+                <i class="ph-bold ph-caret-right text-neutral-400"></i>
+            </button>
+        </div>
+
+        <!-- Support -->
+        <div class="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-neutral-100 dark:border-dark-border overflow-hidden">
+            <div class="px-5 py-3 border-b border-neutral-100 dark:border-dark-border">
+                <h3 class="font-semibold text-sm text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">Support</h3>
+            </div>
+            <button class="w-full flex items-center gap-4 px-5 py-4 hover:bg-neutral-50 dark:hover:bg-dark-surface transition-colors text-left border-b border-neutral-100 dark:border-dark-border">
+                <i class="ph-bold ph-question text-neutral-500 text-xl"></i>
+                <div class="flex-1">
+                    <p class="font-medium text-sm">Help Center</p>
+                </div>
+                <i class="ph-bold ph-caret-right text-neutral-400"></i>
+            </button>
+            <button class="w-full flex items-center gap-4 px-5 py-4 hover:bg-neutral-50 dark:hover:bg-dark-surface transition-colors text-left border-b border-neutral-100 dark:border-dark-border">
+                <i class="ph-bold ph-envelope text-neutral-500 text-xl"></i>
+                <div class="flex-1">
+                    <p class="font-medium text-sm">Contact Us</p>
+                </div>
+                <i class="ph-bold ph-caret-right text-neutral-400"></i>
+            </button>
+            <button class="w-full flex items-center gap-4 px-5 py-4 hover:bg-neutral-50 dark:hover:bg-dark-surface transition-colors text-left">
+                <i class="ph-bold ph-bug text-neutral-500 text-xl"></i>
+                <div class="flex-1">
+                    <p class="font-medium text-sm">Report a Bug</p>
+                </div>
+                <i class="ph-bold ph-caret-right text-neutral-400"></i>
+            </button>
+        </div>
+
+        <button onclick="app.logout()" class="w-full h-12 rounded-xl border-2 border-error-200 dark:border-error-900/30 text-error-600 dark:text-error-400 font-semibold">Log Out</button>
+
+        <p class="text-center text-xs text-neutral-400">EduHeTech v1.0.0</p>
+    </div>
+</div>
+
+<!-- ==================== REFERRAL ==================== -->
+<div id="page-referral" class="page pb-24">
+    <div class="sticky top-0 z-40 glass border-b border-neutral-200/50 dark:border-dark-border/50 px-4 py-3 flex items-center justify-between">
+        <button onclick="app.goBack()" class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-arrow-left text-xl text-neutral-700 dark:text-neutral-300"></i>
+        </button>
+        <h1 class="text-lg font-bold">Refer & Earn</h1>
+        <div class="w-10"></div>
+    </div>
+
+    <div class="p-4 space-y-5">
+        <div class="rounded-2xl gradient-green p-6 text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 -translate-x-1/2"></div>
+            <div class="absolute bottom-0 right-0 w-24 h-24 bg-white/10 rounded-full translate-y-1/2 translate-x-1/2"></div>
+            <div class="relative z-10">
+                <i class="ph-duotone ph-gift text-white/30 text-6xl"></i>
+                <h2 class="text-white font-bold text-xl mt-2">Invite Friends, Earn Big!</h2>
+                <p class="text-white/80 text-sm mt-1">Get 500 EduPoints for every friend who joins</p>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-dark-border text-center">
+            <p class="text-sm text-neutral-500 dark:text-neutral-400">Your Referral Code</p>
+            <div class="mt-3 flex items-center justify-center gap-3">
+                <div class="h-14 px-6 rounded-xl bg-neutral-100 dark:bg-dark-surface flex items-center">
+                    <span class="text-2xl font-bold tracking-widest" id="referral-code">EDU2024</span>
+                </div>
+                <button onclick="app.copyReferral()" class="w-14 h-14 rounded-xl bg-primary-500 text-white flex items-center justify-center shadow-lg">
+                    <i class="ph-bold ph-copy text-xl"></i>
+                </button>
+            </div>
+            <button class="mt-4 w-full h-12 rounded-xl gradient-green text-white font-semibold shadow-lg shadow-success-500/30">Share Code</button>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-dark-border">
+            <h3 class="font-semibold mb-3">Your Referrals</h3>
+            <div class="flex items-center justify-between py-2">
+                <span class="text-sm text-neutral-500">Friends Invited</span>
+                <span class="font-bold">12</span>
+            </div>
+            <div class="flex items-center justify-between py-2">
+                <span class="text-sm text-neutral-500">Points Earned</span>
+                <span class="font-bold text-success-600 dark:text-success-400">6,000</span>
+            </div>
+            <div class="flex items-center justify-between py-2">
+                <span class="text-sm text-neutral-500">Active Friends</span>
+                <span class="font-bold">8</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== NOTIFICATIONS ==================== -->
+<div id="notifications-panel" class="fixed inset-0 z-[80] hidden">
+    <div class="absolute inset-0 bg-black/50" onclick="app.hideNotifications()"></div>
+    <div class="absolute top-0 right-0 bottom-0 w-full max-w-sm bg-white dark:bg-dark-surface shadow-2xl transform translate-x-full transition-transform duration-300" id="notifications-content">
+        <div class="p-4 border-b border-neutral-200 dark:border-dark-border flex items-center justify-between">
+            <h2 class="text-lg font-bold">Notifications</h2>
+            <button onclick="app.hideNotifications()" class="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-dark-card flex items-center justify-center">
+                <i class="ph-bold ph-x text-xl"></i>
+            </button>
+        </div>
+        <div class="p-4 space-y-3 overflow-y-auto" style="height:calc(100% - 60px)">
+            <div class="flex gap-3 p-3 rounded-xl bg-primary-50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-900/20">
+                <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                    <i class="ph-fill ph-graduation-cap text-primary-500"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium">Course Completed!</p>
+                    <p class="text-xs text-neutral-500 mt-0.5">You completed "Nursing Fundamentals Module 3"</p>
+                    <p class="text-xs text-neutral-400 mt-1">2 hours ago</p>
+                </div>
+            </div>
+            <div class="flex gap-3 p-3 rounded-xl bg-success-50 dark:bg-success-900/10 border border-success-100 dark:border-success-900/20">
+                <div class="w-10 h-10 rounded-full bg-success-100 flex items-center justify-center flex-shrink-0">
+                    <i class="ph-fill ph-coins text-success-500"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium">Points Earned!</p>
+                    <p class="text-xs text-neutral-500 mt-0.5">You earned 150 EduPoints for completing a quiz</p>
+                    <p class="text-xs text-neutral-400 mt-1">5 hours ago</p>
+                </div>
+            </div>
+            <div class="flex gap-3 p-3 rounded-xl bg-neutral-50 dark:bg-dark-card">
+                <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                    <i class="ph-fill ph-article text-purple-500"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium">New Blog Post</p>
+                    <p class="text-xs text-neutral-500 mt-0.5">"The Future of Nursing: AI in 2026" is now live</p>
+                    <p class="text-xs text-neutral-400 mt-1">1 day ago</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== AD MODAL ==================== -->
+<div id="ad-modal" class="fixed inset-0 z-[90] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/70" onclick="app.closeAd()"></div>
+    <div class="relative bg-white dark:bg-dark-card rounded-2xl w-full max-w-sm overflow-hidden modal-enter">
+        <div class="h-[250px] bg-gradient-to-br from-neutral-200 to-neutral-300 dark:from-neutral-700 dark:to-neutral-800 flex items-center justify-center">
+            <div class="text-center">
+                <i class="ph-duotone ph-monitor-play text-neutral-400 text-6xl"></i>
+                <p class="text-neutral-500 dark:text-neutral-400 mt-2 text-sm">Advertisement</p>
+            </div>
+            <button onclick="app.closeAd()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center">
+                <i class="ph-bold ph-x"></i>
+            </button>
+        </div>
+        <div class="p-5 text-center">
+            <p class="text-sm text-neutral-500 dark:text-neutral-400">Watch this 30-second ad to earn</p>
+            <p class="text-2xl font-bold text-success-600 dark:text-success-400 mt-1">+50 EduPoints</p>
+            <div class="mt-4 flex gap-3">
+                <button onclick="app.closeAd()" class="flex-1 h-11 rounded-xl border-2 border-neutral-200 dark:border-dark-border text-neutral-600 dark:text-neutral-400 font-medium text-sm">Skip</button>
+                <button onclick="app.completeAd()" class="flex-1 h-11 rounded-xl gradient-green text-white font-medium text-sm shadow-lg shadow-success-500/30">Watch & Earn</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== WITHDRAW MODAL ==================== -->
+<div id="withdraw-modal" class="fixed inset-0 z-[90] hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="absolute inset-0 bg-black/50" onclick="app.hideWithdraw()"></div>
+    <div class="relative bg-white dark:bg-dark-card rounded-t-2xl sm:rounded-2xl w-full max-w-sm p-6 modal-enter">
+        <div class="w-12 h-1.5 bg-neutral-300 dark:bg-neutral-600 rounded-full mx-auto mb-6 sm:hidden"></div>
+        <h2 class="text-xl font-bold text-center">Withdraw Points</h2>
+        <p class="text-sm text-neutral-500 text-center mt-1">Convert EduPoints to cash</p>
+        <div class="mt-6">
+            <label class="text-sm font-medium">Amount (EduPoints)</label>
+            <input type="number" id="withdraw-amount" class="mt-2 w-full h-14 px-4 rounded-xl bg-neutral-100 dark:bg-dark-surface border-2 border-transparent focus:border-primary-500 outline-none text-lg font-bold text-center" placeholder="0" value="1000">
+            <p class="text-xs text-neutral-500 mt-2 text-center">Minimum: 1,000 points • Rate: 100 pts = $1.00</p>
+        </div>
+        <div class="mt-4 space-y-2">
+            <label class="flex items-center gap-3 p-3 rounded-xl border-2 border-primary-500 bg-primary-50 dark:bg-primary-900/10 cursor-pointer">
+                <input type="radio" name="withdraw-method" checked class="w-5 h-5 text-primary-500">
+                <i class="ph-fill ph-bank text-primary-500 text-xl"></i>
+                <span class="font-medium text-sm">Bank Transfer</span>
+            </label>
+            <label class="flex items-center gap-3 p-3 rounded-xl border-2 border-neutral-200 dark:border-dark-border cursor-pointer">
+                <input type="radio" name="withdraw-method" class="w-5 h-5 text-primary-500">
+                <i class="ph-fill ph-phone text-success-500 text-xl"></i>
+                <span class="font-medium text-sm">Mobile Money</span>
+            </label>
+        </div>
+        <button onclick="app.processWithdrawal()" class="mt-6 w-full h-14 rounded-xl gradient-green text-white font-semibold text-lg shadow-lg shadow-success-500/30">Request Withdrawal</button>
+    </div>
+</div>
+
+<!-- ==================== TOAST ==================== -->
+<div id="toast" class="fixed bottom-24 left-4 right-4 z-[100] hidden">
+    <div class="bg-neutral-800 dark:bg-white text-white dark:text-neutral-900 px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 toast-enter">
+        <i class="ph-fill ph-check-circle text-success-400 dark:text-success-500 text-xl" id="toast-icon"></i>
+        <span class="text-sm font-medium" id="toast-message">Success!</span>
+    </div>
+</div>
+
+<!-- ==================== BOTTOM NAVIGATION ==================== -->
+<div id="bottom-nav" class="fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-dark-surface border-t border-neutral-200 dark:border-dark-border z-50 hidden">
+    <div class="flex items-center justify-around h-full px-2">
+        <button onclick="app.navigate('home')" class="nav-item flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-colors" data-page="home">
+            <i class="ph-fill ph-house text-2xl text-primary-500"></i>
+            <span class="text-[10px] font-medium text-primary-500">Home</span>
+        </button>
+        <button onclick="app.navigate('courses')" class="nav-item flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-colors" data-page="courses">
+            <i class="ph-fill ph-book-open text-2xl text-neutral-400 dark:text-neutral-500"></i>
+            <span class="text-[10px] font-medium text-neutral-400 dark:text-neutral-500">Courses</span>
+        </button>
+        <button onclick="app.navigate('ai')" class="nav-item flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-colors relative -mt-6" data-page="ai">
+            <div class="w-14 h-14 rounded-full gradient-purple flex items-center justify-center shadow-lg shadow-purple-500/30">
+                <i class="ph-fill ph-sparkle text-white text-2xl"></i>
+            </div>
+            <span class="text-[10px] font-medium text-neutral-400 dark:text-neutral-500">AI Tutor</span>
+        </button>
+        <button onclick="app.navigate('community')" class="nav-item flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-colors" data-page="community">
+            <i class="ph-fill ph-users-three text-2xl text-neutral-400 dark:text-neutral-500"></i>
+            <span class="text-[10px] font-medium text-neutral-400 dark:text-neutral-500">Community</span>
+        </button>
+        <button onclick="app.navigate('profile')" class="nav-item flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-colors" data-page="profile">
+            <i class="ph-fill ph-user text-2xl text-neutral-400 dark:text-neutral-500"></i>
+            <span class="text-[10px] font-medium text-neutral-400 dark:text-neutral-500">Profile</span>
+        </button>
+    </div>
+</div>
+
+</div><!-- end main-content -->
+</div><!-- end app -->
+
+<script>
+// ==================== APP STATE ====================
+const app = {
+    currentPage: 'splash',
+    pageHistory: [],
+    user: null,
+    isDarkMode: false,
+    chatHistory: [],
+    points: 2450,
+    onboardingIndex: 0,
+
+    // ==================== INIT ====================
+    init() {
+        // Check dark mode preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            this.toggleDarkMode(true);
+        }
+
+        // Start splash sequence
+        setTimeout(() => {
+            document.getElementById('splash-bar').style.width = '100%';
+        }, 100);
+
+        setTimeout(() => {
+            document.getElementById('splash').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('splash').classList.add('hidden');
+                this.showOnboarding();
+            }, 500);
+        }, 2500);
+    },
+
+    // ==================== NAVIGATION ====================
+    navigate(page) {
+        if (this.currentPage === page) return;
+
+        // Hide current page
+        const currentEl = document.getElementById(`page-${this.currentPage}`);
+        if (currentEl) currentEl.classList.remove('active');
+
+        // Show new page
+        const newEl = document.getElementById(`page-${page}`);
+        if (newEl) {
+            newEl.classList.add('active');
+            newEl.classList.add('slide-in');
+            setTimeout(() => newEl.classList.remove('slide-in'), 300);
+        }
+
+        // Update history
+        if (this.currentPage !== 'splash' && this.currentPage !== 'onboarding' && this.currentPage !== 'auth') {
+            this.pageHistory.push(this.currentPage);
+        }
+
+        this.currentPage = page;
+        this.updateNavState();
+        this.updateHeader();
+    },
+
+    goBack() {
+        const prev = this.pageHistory.pop();
+        if (prev) {
+            const currentEl = document.getElementById(`page-${this.currentPage}`);
+            if (currentEl) currentEl.classList.remove('active');
+            const prevEl = document.getElementById(`page-${prev}`);
+            if (prevEl) prevEl.classList.add('active');
+            this.currentPage = prev;
+            this.updateNavState();
+            this.updateHeader();
+        }
+    },
+
+    updateNavState() {
+        const navPages = ['home', 'courses', 'ai', 'community', 'profile'];
+        const bottomNav = document.getElementById('bottom-nav');
+
+        if (navPages.includes(this.currentPage)) {
+            bottomNav.classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(item => {
+                const page = item.dataset.page;
+                const icon = item.querySelector('i');
+                const text = item.querySelector('span');
+                if (page === this.currentPage) {
+                    icon.classList.remove('text-neutral-400', 'dark:text-neutral-500');
+                    icon.classList.add('text-primary-500');
+                    text.classList.remove('text-neutral-400', 'dark:text-neutral-500');
+                    text.classList.add('text-primary-500');
+                } else {
+                    icon.classList.add('text-neutral-400', 'dark:text-neutral-500');
+                    icon.classList.remove('text-primary-500');
+                    text.classList.add('text-neutral-400', 'dark:text-neutral-500');
+                    text.classList.remove('text-primary-500');
+                }
+            });
+        } else {
+            bottomNav.classList.add('hidden');
+        }
+    },
+
+    updateHeader() {
+        const greeting = document.getElementById('greeting');
+        if (greeting) {
+            const hour = new Date().getHours();
+            let text = 'Good Morning';
+            if (hour >= 12 && hour < 17) text = 'Good Afternoon';
+            else if (hour >= 17) text = 'Good Evening';
+            greeting.textContent = text;
+        }
+    },
+
+    // ==================== ONBOARDING ====================
+    showOnboarding() {
+        document.getElementById('onboarding').classList.remove('hidden');
+        this.currentPage = 'onboarding';
+    },
+
+    nextOnboarding() {
+        const slides = document.querySelectorAll('.onboarding-slide');
+        const dots = document.querySelectorAll('.onboarding-dot');
+
+        slides[this.onboardingIndex].classList.add('hidden');
+        dots[this.onboardingIndex].classList.remove('bg-primary-500');
+        dots[this.onboardingIndex].classList.add('bg-neutral-300', 'dark:bg-neutral-700');
+
+        this.onboardingIndex++;
+
+        if (this.onboardingIndex >= slides.length) {
+            this.onboardingIndex = 0;
+        }
+
+        slides[this.onboardingIndex].classList.remove('hidden');
+        dots[this.onboardingIndex].classList.add('bg-primary-500');
+        dots[this.onboardingIndex].classList.remove('bg-neutral-300', 'dark:bg-neutral-700');
+    },
+
+    // ==================== AUTH ====================
+    goToAuth() {
+        document.getElementById('onboarding').classList.add('hidden');
+        document.getElementById('auth').classList.remove('hidden');
+        this.showLogin();
+        this.currentPage = 'auth';
+    },
+
+    showLogin() {
+        document.getElementById('login-view').classList.remove('hidden');
+        document.getElementById('register-view').classList.add('hidden');
+    },
+
+    showRegister() {
+        document.getElementById('login-view').classList.add('hidden');
+        document.getElementById('register-view').classList.remove('hidden');
+    },
+
+    showForgot() {
+        this.showToast('Password reset link sent!', 'ph-envelope');
+    },
+
+    login(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        this.user = { name: 'Alex Johnson', email: email, role: 'Student' };
+        this.completeAuth();
+    },
+
+    register(e) {
+        e.preventDefault();
+        const name = document.getElementById('reg-name').value;
+        this.user = { name: name, email: document.getElementById('reg-email').value, role: 'Student' };
+        this.completeAuth();
+    },
+
+    socialLogin(provider) {
+        this.user = { name: 'Alex Johnson', email: 'alex@example.com', role: 'Student' };
+        this.completeAuth();
+    },
+
+    completeAuth() {
+        document.getElementById('auth').classList.add('hidden');
+        document.getElementById('drawer-name').textContent = this.user.name;
+        document.getElementById('header-name').textContent = this.user.name.split(' ')[0];
+        this.navigate('home');
+        this.showToast('Welcome back, ' + this.user.name.split(' ')[0] + '!', 'ph-hand-waving');
+    },
+
+    logout() {
+        this.user = null;
+        this.pageHistory = [];
+        this.closeDrawer();
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-home').classList.add('active');
+        this.currentPage = 'home';
+        this.showLogin();
+        document.getElementById('auth').classList.remove('hidden');
+        document.getElementById('bottom-nav').classList.add('hidden');
+    },
+
+    togglePassword(id) {
+        const input = document.getElementById(id);
+        input.type = input.type === 'password' ? 'text' : 'password';
+    },
+
+    // ==================== DRAWER ====================
+    openDrawer() {
+        document.getElementById('drawer-overlay').classList.remove('hidden');
+        setTimeout(() => document.getElementById('drawer-overlay').classList.remove('opacity-0'), 10);
+        document.getElementById('drawer').classList.remove('-translate-x-full');
+    },
+
+    closeDrawer() {
+        document.getElementById('drawer-overlay').classList.add('opacity-0');
+        document.getElementById('drawer').classList.add('-translate-x-full');
+        setTimeout(() => document.getElementById('drawer-overlay').classList.add('hidden'), 300);
+    },
+
+    // ==================== DARK MODE ====================
+    toggleDarkMode(force) {
+        if (typeof force === 'boolean') {
+            this.isDarkMode = force;
+        } else {
+            this.isDarkMode = !this.isDarkMode;
+        }
+        document.documentElement.classList.toggle('dark', this.isDarkMode);
+        const icon = document.getElementById('drawer-dark-icon');
+        if (icon) {
+            icon.className = this.isDarkMode ? 'ph-fill ph-sun text-warning-500 text-xl' : 'ph-fill ph-moon text-neutral-500 text-xl';
+        }
+    },
+
+    // ==================== NOTIFICATIONS ====================
+    showNotifications() {
+        const panel = document.getElementById('notifications-panel');
+        const content = document.getElementById('notifications-content');
+        panel.classList.remove('hidden');
+        setTimeout(() => content.classList.remove('translate-x-full'), 10);
+    },
+
+    hideNotifications() {
+        const panel = document.getElementById('notifications-panel');
+        const content = document.getElementById('notifications-content');
+        content.classList.add('translate-x-full');
+        setTimeout(() => panel.classList.add('hidden'), 300);
+    },
+
+    // ==================== COURSES ====================
+    openCourse(id) {
+        this.navigate('course-detail');
+    },
+
+    enrollCourse() {
+        this.showToast('Successfully enrolled! +50 points', 'ph-check-circle');
+        this.points += 50;
+    },
+
+    // ==================== AI TUTOR ====================
+    sendMessage() {
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        this.addUserMessage(text);
+        input.value = '';
+        input.rows = 1;
+
+        // Simulate AI response
+        setTimeout(() => {
+            this.addAIMessage(this.generateAIResponse(text));
+        }, 1000);
+    },
+
+    sendPrompt(text) {
+        this.addUserMessage(text);
+        setTimeout(() => {
+            this.addAIMessage(this.generateAIResponse(text));
+        }, 1000);
+    },
+
+    addUserMessage(text) {
+        const container = document.getElementById('chat-messages');
+        const msg = document.createElement('div');
+        msg.className = 'flex gap-3 justify-end';
+        msg.innerHTML = `
+            <div class="bg-primary-500 text-white rounded-2xl rounded-tr-sm p-4 max-w-[85%]">
+                <p class="text-sm leading-relaxed">${text}</p>
+            </div>
+            <div class="w-9 h-9 rounded-full gradient-blue flex items-center justify-center flex-shrink-0">
+                <i class="ph-fill ph-user text-white text-sm"></i>
+            </div>
+        `;
+        container.appendChild(msg);
+        container.scrollTop = container.scrollHeight;
+    },
+
+    addAIMessage(text) {
+        const container = document.getElementById('chat-messages');
+        const msg = document.createElement('div');
+        msg.className = 'flex gap-3';
+        msg.innerHTML = `
+            <div class="w-9 h-9 rounded-full gradient-purple flex items-center justify-center flex-shrink-0">
+                <i class="ph-fill ph-robot text-white text-sm"></i>
+            </div>
+            <div class="bg-neutral-100 dark:bg-dark-card rounded-2xl rounded-tl-sm p-4 max-w-[85%]">
+                <p class="text-sm leading-relaxed">${text}</p>
+                <div class="flex gap-2 mt-3">
+                    <button class="text-xs text-neutral-500 hover:text-primary-500 flex items-center gap-1"><i class="ph-bold ph-copy"></i> Copy</button>
+                    <button class="text-xs text-neutral-500 hover:text-primary-500 flex items-center gap-1"><i class="ph-bold ph-arrows-clockwise"></i> Regenerate</button>
+                </div>
+            </div>
+        `;
+        container.appendChild(msg);
+        container.scrollTop = container.scrollHeight;
+    },
+
+    generateAIResponse(prompt) {
+        const responses = {
+            'photosynthesis': 'Photosynthesis is the process by which plants use sunlight, water, and carbon dioxide to create oxygen and energy in the form of sugar. Here are the key steps:
+
+1. **Light Absorption**: Chlorophyll in leaves captures light energy
+2. **Water Splitting**: Water molecules are split into hydrogen and oxygen
+3. **CO2 Fixation**: Carbon dioxide is converted into glucose
+4. **Energy Storage**: Glucose is stored as chemical energy
+
+The overall equation: 6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂',
+            'nursing': 'I'd be happy to quiz you on nursing! Here's your first question:
+
+**Q1: What is the normal range for adult blood pressure?**
+
+A) 90/60 - 120/80 mmHg
+B) 100/70 - 140/90 mmHg
+C) 80/50 - 110/70 mmHg
+D) 120/80 - 160/100 mmHg
+
+Reply with your answer (A, B, C, or D)!',
+            'cell': 'Cell Structure Summary:
+
+**Plasma Membrane**: Outer boundary, controls what enters/exits
+**Nucleus**: Contains DNA, controls cell activities
+**Mitochondria**: "Powerhouse" - produces ATP via cellular respiration
+**Ribosomes**: Protein synthesis
+**Endoplasmic Reticulum**: Protein and lipid transport
+**Golgi Apparatus**: Modifies, sorts, and packages proteins
+**Lysosomes**: Digestive enzymes, waste removal
+**Cytoplasm**: Jelly-like substance where reactions occur',
+            'dental': 'Dental Anatomy Key Points:
+
+**Adult Dentition**: 32 permanent teeth
+- Incisors (8): Cutting food
+- Canines (4): Tearing
+- Premolars (8): Crushing
+- Molars (12): Grinding
+
+**Tooth Structure**:
+- Enamel: Hardest substance in body
+- Dentin: Supports enamel, contains tubules
+- Pulp: Nerves and blood vessels
+- Cementum: Covers root, attaches to bone
+
+Would you like me to explain occlusion patterns or dental numbering systems?'
+        };
+
+        const key = Object.keys(responses).find(k => prompt.toLowerCase().includes(k));
+        return responses[key] || `That's an interesting question about "${prompt}"! I'd be happy to help you explore this topic in detail. Could you let me know which specific aspect you'd like to focus on, or would you like a general overview?`;
+    },
+
+    clearChat() {
+        const container = document.getElementById('chat-messages');
+        container.innerHTML = '';
+        this.addAIMessage('Chat cleared! How can I help you today?');
+    },
+
+    // ==================== LEARN & EARN ====================
+    watchAd() {
+        document.getElementById('ad-modal').classList.remove('hidden');
+    },
+
+    closeAd() {
+        document.getElementById('ad-modal').classList.add('hidden');
+    },
+
+    completeAd() {
+        this.closeAd();
+        this.points += 50;
+        this.showConfetti();
+        this.showToast('+50 EduPoints earned!', 'ph-coins');
+    },
+
+    showWithdraw() {
+        document.getElementById('withdraw-modal').classList.remove('hidden');
+    },
+
+    hideWithdraw() {
+        document.getElementById('withdraw-modal').classList.add('hidden');
+    },
+
+    processWithdrawal() {
+        this.hideWithdraw();
+        this.showToast('Withdrawal request submitted!', 'ph-check-circle');
+    },
+
+    copyReferral() {
+        const code = document.getElementById('referral-code').textContent;
+        navigator.clipboard?.writeText(code);
+        this.showToast('Referral code copied!', 'ph-copy');
+    },
+
+    // ==================== BLOG ====================
+    openBlog(id) {
+        this.navigate('blog-detail');
+    },
+
+    // ==================== UI EFFECTS ====================
+    showToast(message, icon) {
+        const toast = document.getElementById('toast');
+        const msgEl = document.getElementById('toast-message');
+        const iconEl = document.getElementById('toast-icon');
+
+        msgEl.textContent = message;
+        iconEl.className = `ph-fill ${icon} text-success-400 dark:text-success-500 text-xl`;
+
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 3000);
+    },
+
+    showConfetti() {
+        const colors = ['#2196F3', '#4CAF50', '#FF9800', '#9C27B0', '#F44336', '#00BCD4'];
+        for (let i = 0; i < 50; i++) {
+            const piece = document.createElement('div');
+            piece.className = 'confetti-piece';
+            piece.style.left = Math.random() * 100 + 'vw';
+            piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            piece.style.animationDelay = Math.random() * 2 + 's';
+            piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+            document.body.appendChild(piece);
+            setTimeout(() => piece.remove(), 3000);
+        }
+    },
+
+    showSearch() {
+        this.showToast('Search coming soon!', 'ph-magnifying-glass');
+    }
+};
+
+// ==================== INIT APP ====================
+document.addEventListener('DOMContentLoaded', () => {
+    app.init();
+});
+
+// Auto-resize textarea
+const chatInput = document.getElementById('chat-input');
+if (chatInput) {
+    chatInput.addEventListener('input', function() {
+        this.rows = 1;
+        const newRows = Math.min(5, Math.ceil(this.scrollHeight / 24));
+        this.rows = newRows;
+    });
+}
+</script>
+</body>
+</html>
